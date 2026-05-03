@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Trans-Atlantic Example Cable"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-74.006, 40.7128], [-9.1393, 38.7223], [-0.1276, 51.5072]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Trans-Pacific Example Cable"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-118.2437, 34.0522], [-157.8583, 21.3069], [139.6917, 35.6895]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Indian Ocean Example Cable"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[39.2868, -6.8235], [55.4920, -4.6796], [72.8777, 19.0760], [103.8198, 1.3521]]
+      }
+    }
+  ]
+}

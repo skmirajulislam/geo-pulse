@@ -1,0 +1,37 @@
+/* ===== MapView.css ===== */
+
+.mv-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+@keyframes marker-ping {
+  0%   { transform: scale(0.5); opacity: 0.3; }
+  70%  { transform: scale(1);   opacity: 0; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+
+/* Remove default Leaflet tooltip chrome */
+.custom-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.custom-tooltip .leaflet-tooltip-arrow { display: none; }
+.leaflet-control-attribution { display: none !important; }
+
+/* Glowing Zone Overlay for GeoJSON */
+.glowing-zone {
+  filter: drop-shadow(0 0 10px currentColor);
+  animation: zone-pulse 4s ease-in-out infinite;
+  transition: all 0.5s ease;
+  mix-blend-mode: screen;
+}
+
+@keyframes zone-pulse {
+  0%   { fill-opacity: 0.15; filter: drop-shadow(0 0 8px currentColor); }
+  50%  { fill-opacity: 0.25; filter: drop-shadow(0 0 16px currentColor); }
+  100% { fill-opacity: 0.15; filter: drop-shadow(0 0 8px currentColor); }
+}

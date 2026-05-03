@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Example European Pipeline"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[29.7435, 60.5365], [13.6266, 54.1441], [4.4792, 51.9225]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Example Middle East Pipeline"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[47.9774, 29.3117], [39.2239, 21.4858], [32.2846, 30.5852], [34.7818, 32.0853]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Example US Gulf Pipeline"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-95.3698, 29.7604], [-90.0715, 29.9511], [-82.4572, 27.9506]]
+      }
+    }
+  ]
+}

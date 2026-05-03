@@ -1,0 +1,176 @@
+/* ROOT */
+.db-root {
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-base, #05070d);
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: "Poppins", sans-serif;
+}
+
+/* HEADER */
+.db-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.db-header h2 {
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.db-header button {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.db-header button:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+/* GRID LAYOUT */
+.db-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 12px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+/* LEFT / RIGHT COLUMNS */
+.db-left,
+.db-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+/* CENTER MAP */
+.db-center {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* CARDS */
+.db-card {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+/* GLASS EFFECT */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* CARD TITLE */
+.db-card h3 {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+/* ITEMS */
+.db-item {
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.db-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.db-item p {
+  font-size: 12px;
+  margin: 0;
+}
+
+.db-item small {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* LIVE VIDEO */
+.db-video-card {
+  margin-bottom: 10px;
+}
+
+.db-video {
+  width: 100%;
+  height: 140px;
+  border-radius: 8px;
+  border: none;
+  background: black;
+}
+
+/* WEATHER */
+.db-temp {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.db-weather-info {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* BOTTOM FEED */
+.db-bottom {
+  height: 160px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+/* SCROLLBAR (CLEAN DARK) */
+.db-left::-webkit-scrollbar,
+.db-right::-webkit-scrollbar {
+  width: 4px;
+}
+
+.db-left::-webkit-scrollbar-thumb,
+.db-right::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .db-grid {
+    grid-template-columns: 250px 1fr;
+  }
+
+  .db-right {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .db-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .db-left,
+  .db-right {
+    display: none;
+  }
+}

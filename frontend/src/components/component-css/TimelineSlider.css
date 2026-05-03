@@ -1,0 +1,108 @@
+/* ===== TimelineSlider.css ===== */
+
+.ts-root {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  /* 🔥 THIS is the fix */
+
+  z-index: 10000;
+
+  width: clamp(280px, 90vw, 600px);
+  padding: clamp(0.35rem, 0.6vw, 0.6rem);
+
+  border-radius: 0.75rem;
+
+  background: rgba(20, 20, 30, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ts-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Header row */
+.ts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(0.2rem, 0.4vw, 0.35rem);
+}
+
+.ts-label-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.ts-label-text {
+  font-size: clamp(9px, 0.75vw, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-secondary);
+}
+
+/* Right-side controls */
+.ts-controls {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 0.875rem);
+}
+
+.ts-reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: clamp(9px, 0.75vw, 11px);
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--cat-political);
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ts-reset-btn:hover {
+  color: #ffffff;
+}
+
+.ts-active-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  color: #ffffff;
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+}
+
+/* Slider section */
+.ts-slider-section {
+  position: relative;
+}
+
+.ts-date-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+}
+
+.ts-date-label {
+  font-size: clamp(9px, 0.75vw, 11px);
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ts-date-label--right {
+  text-align: right;
+}

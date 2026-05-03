@@ -1,0 +1,44 @@
+name: Fork Notification
+
+on:
+  fork:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  notify-fork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issue for new fork
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const forkee = context.payload.forkee;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = `New fork detected: ${forkee.full_name}`;
+            const body = [
+              "A new fork was created.",
+              "",
+              `- **Fork**: [${forkee.full_name}](${forkee.html_url})`,
+              `- **Created by**: @${forkee.owner.login}`,
+              `- **Default branch**: \`${forkee.default_branch}\``,
+              `- **Timestamp**: ${new Date().toISOString()}`
+            ].join("\n");
+
+            const existing = await github.paginate(
+              github.rest.issues.listForRepo,
+              { owner, repo, state: "open", per_page: 100 }
+            );
+
+            const duplicate = existing.find((issue) => issue.title === title);
+            if (!duplicate) {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body
+              });
+            }

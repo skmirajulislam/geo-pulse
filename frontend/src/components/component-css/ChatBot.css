@@ -1,0 +1,213 @@
+/* ===== ChatBot.css ===== */
+
+/* Toggle FAB */
+.cb-fab {
+  position: fixed;
+  bottom: 5rem;
+  right: 1.5rem;
+  z-index: 40;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cat-political);
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+  transition: box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.cb-fab:hover {
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+}
+
+/* Chat panel */
+.cb-panel {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  width: 380px;
+  height: 520px;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Panel header */
+.cb-header {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.cb-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cb-header-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-family: 'Chivo', sans-serif;
+}
+
+.cb-header-badge {
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.125rem;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--text-muted);
+}
+
+.cb-close-btn {
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+  transition: background 0.15s;
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: inherit;
+}
+
+.cb-close-btn:hover {
+  background: var(--bg-elevated);
+}
+
+/* Messages area */
+.cb-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cb-msg-row {
+  display: flex;
+}
+
+.cb-msg-row--user {
+  justify-content: flex-end;
+}
+
+.cb-msg-row--assistant {
+  justify-content: flex-start;
+}
+
+.cb-bubble {
+  max-width: 85%;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.cb-bubble--user {
+  background: var(--cat-political);
+  color: #ffffff;
+  border-bottom-right-radius: 0.125rem;
+}
+
+.cb-bubble--assistant {
+  border-bottom-left-radius: 0.125rem;
+  color: var(--text-primary);
+}
+
+.cb-bubble-content {
+  white-space: pre-wrap;
+}
+
+.cb-bubble-provider {
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  opacity: 0.6;
+}
+
+/* Typing indicator */
+.cb-typing-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.cb-typing-bubble {
+  border-radius: 0.5rem;
+  border-bottom-left-radius: 0.125rem;
+  padding: 0.625rem 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cb-typing-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Input footer */
+.cb-footer {
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-default);
+}
+
+.cb-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cb-input {
+  flex: 1 1 0%;
+  border-radius: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.cb-input::placeholder {
+  color: var(--text-muted);
+}
+
+.cb-input:focus {
+  border-color: var(--cat-political);
+}
+
+.cb-send-btn {
+  padding: 0.625rem;
+  border-radius: 0.375rem;
+  background: var(--cat-political);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cb-send-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.cb-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

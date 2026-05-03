@@ -1,0 +1,40 @@
+{
+	"name": "backend",
+	"version": "1.0.0",
+	"description": "",
+	"license": "ISC",
+	"author": "",
+	"type": "commonjs",
+	"main": "index.js",
+	"scripts": {
+		"dev": "nodemon src/server.js",
+		"start": "node src/server.js",
+		"start:cluster": "node src/cluster.js",
+		"start:pm2": "pm2 start ecosystem.config.js",
+		"stop:pm2": "pm2 stop world-monitor-backend",
+		"logs:pm2": "pm2 logs world-monitor-backend",
+		"docker:build": "docker build -t world-monitor-backend .",
+		"docker:run": "docker run --rm -p 5000:5000 --env-file .env world-monitor-backend"
+	},
+	"dependencies": {
+		"@google/generative-ai": "^0.24.1",
+		"axios": "^1.15.0",
+		"cors": "^2.8.6",
+		"dotenv": "^17.4.2",
+		"express": "^5.2.1",
+		"express-rate-limit": "^8.3.2",
+		"helmet": "^8.1.0",
+		"ioredis": "^5.10.1",
+		"mongodb": "^7.1.1",
+		"morgan": "^1.10.1",
+		"node-cron": "^4.2.1",
+		"openai": "^6.34.0",
+		"rate-limit-redis": "^4.3.1",
+		"rss-parser": "^3.13.0",
+		"socket.io": "^4.8.1",
+		"string-similarity": "^4.0.4"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.14"
+	}
+}

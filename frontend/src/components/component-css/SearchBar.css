@@ -1,0 +1,63 @@
+/* ===== SearchBar.css ===== */
+
+/* Collapsed — icon-only button */
+.sb-toggle-btn {
+  border-radius: 0.375rem;
+  padding: 0.625rem;
+  transition: background 0.15s;
+}
+
+.sb-toggle-btn:hover {
+  background: var(--bg-elevated);
+}
+
+/* Expanded search form */
+.sb-form {
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sb-icon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.sb-input {
+  flex: 1 1 0%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  min-width: 0;
+}
+
+.sb-input::placeholder {
+  color: var(--text-muted);
+}
+
+.sb-clear-btn {
+  padding: 0.125rem;
+  border-radius: 0.25rem;
+  transition: background 0.15s;
+}
+
+.sb-clear-btn:hover {
+  background: var(--bg-elevated);
+}
+
+.sb-esc-btn {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.sb-esc-btn:hover {
+  color: #ffffff;
+}
