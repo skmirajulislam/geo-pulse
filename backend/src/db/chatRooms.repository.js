@@ -4,6 +4,8 @@ const logger = require("../utils/logger");
 
 let client = null;
 let collection = null;
+const MONGO_RETRY_COOLDOWN_MS = Number(process.env.MONGO_RETRY_COOLDOWN_MS || 60000);
+let mongoBackoffUntil = 0;
 
 const isDatabaseEnabled = () => Boolean(process.env.MONGODB_URI);
 
@@ -28,24 +30,38 @@ const normalizeName = (value) => value.trim().toLowerCase();
 const getCollection = async () => {
 	if (!isDatabaseEnabled()) return null;
 	if (collection) return collection;
+	if (Date.now() < mongoBackoffUntil) return null;
 
 	const mongoUri = process.env.MONGODB_URI;
 	const dbName = process.env.MONGODB_DB_NAME || "world_monitor";
 
-	client = new MongoClient(mongoUri, {
-		maxPoolSize: 20,
-		minPoolSize: 2,
-	});
-	await client.connect();
+	try {
+		client = new MongoClient(mongoUri, {
+			maxPoolSize: 20,
+			minPoolSize: 2,
+		});
+		await client.connect();
 
-	collection = client.db(dbName).collection("chat_rooms");
-	await Promise.all([
-		collection.createIndex({ roomNameNormalized: 1 }, { unique: true }),
-		collection.createIndex({ updatedAt: -1 }),
-		collection.createIndex({ lastInteractionAt: 1 }),
-	]);
-	logger.info(`MongoDB connected (${dbName}.chat_rooms)`, "db.chat");
-	return collection;
+		collection = client.db(dbName).collection("chat_rooms");
+		await Promise.all([
+			collection.createIndex({ roomNameNormalized: 1 }, { unique: true }),
+			collection.createIndex({ updatedAt: -1 }),
+			collection.createIndex({ lastInteractionAt: 1 }),
+		]);
+		mongoBackoffUntil = 0;
+		logger.info(`MongoDB connected (${dbName}.chat_rooms)`, "db.chat");
+		return collection;
+	} catch (err) {
+		mongoBackoffUntil = Date.now() + MONGO_RETRY_COOLDOWN_MS;
+		if (client) {
+			try {
+				await client.close();
+			} catch (_closeErr) {}
+		}
+		client = null;
+		collection = null;
+		throw err;
+	}
 };
 
 const touchRoom = async (roomId) => {
@@ -75,6 +91,7 @@ exports.closeChatRoomsRepository = async () => {
 	await client.close();
 	client = null;
 	collection = null;
+	mongoBackoffUntil = 0;
 };
 
 exports.createRoom = async ({ roomName, topic = "", ownerName }) => {

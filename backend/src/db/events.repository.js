@@ -3,9 +3,11 @@ const logger = require("../utils/logger");
 
 const RETENTION_DAYS = Number(process.env.RETENTION_DAYS || 15);
 const RETENTION_SECONDS = RETENTION_DAYS * 24 * 60 * 60;
+const MONGO_RETRY_COOLDOWN_MS = Number(process.env.MONGO_RETRY_COOLDOWN_MS || 60000);
 
 let client = null;
 let collection = null;
+let mongoBackoffUntil = 0;
 
 const isDatabaseEnabled = () => Boolean(process.env.MONGODB_URI);
 
@@ -40,20 +42,34 @@ const ensureIndexes = async () => {
 const getCollection = async () => {
 	if (!isDatabaseEnabled()) return null;
 	if (collection) return collection;
+	if (Date.now() < mongoBackoffUntil) return null;
 
 	const mongoUri = process.env.MONGODB_URI;
 	const dbName = process.env.MONGODB_DB_NAME || "world_monitor";
 
-	client = new MongoClient(mongoUri, {
-		maxPoolSize: 20,
-		minPoolSize: 2,
-	});
+	try {
+		client = new MongoClient(mongoUri, {
+			maxPoolSize: 20,
+			minPoolSize: 2,
+		});
 
-	await client.connect();
-	collection = client.db(dbName).collection("events");
-	await ensureIndexes();
-	logger.info(`MongoDB connected (${dbName}.events)`, "db.events");
-	return collection;
+		await client.connect();
+		collection = client.db(dbName).collection("events");
+		await ensureIndexes();
+		mongoBackoffUntil = 0;
+		logger.info(`MongoDB connected (${dbName}.events)`, "db.events");
+		return collection;
+	} catch (err) {
+		mongoBackoffUntil = Date.now() + MONGO_RETRY_COOLDOWN_MS;
+		if (client) {
+			try {
+				await client.close();
+			} catch (_closeErr) {}
+		}
+		client = null;
+		collection = null;
+		throw err;
+	}
 };
 
 exports.isDatabaseEnabled = isDatabaseEnabled;
@@ -72,6 +88,7 @@ exports.closeEventsRepository = async () => {
 	await client.close();
 	client = null;
 	collection = null;
+	mongoBackoffUntil = 0;
 };
 
 exports.upsertEvents = async (events = []) => {

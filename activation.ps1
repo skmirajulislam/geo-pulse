@@ -111,7 +111,7 @@ try {
   $backendProc = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "set PORT=$BackendPort&& npm start" -WorkingDirectory $BackendDir -PassThru -WindowStyle Normal
 
   Write-Info "Starting frontend on port $FrontendPort"
-  $frontendProc = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "set PORT=$FrontendPort&& set BROWSER=none&& npm start" -WorkingDirectory $FrontendDir -PassThru -WindowStyle Normal
+  $frontendProc = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "set PORT=$FrontendPort&& npm run dev" -WorkingDirectory $FrontendDir -PassThru -WindowStyle Normal
 
   Write-Info "Backend PID=$($backendProc.Id), Frontend PID=$($frontendProc.Id)"
   Write-Info "Press Ctrl+C to stop both services."

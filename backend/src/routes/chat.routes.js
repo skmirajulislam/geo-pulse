@@ -9,6 +9,10 @@ const {
 	isChatDatabaseEnabled,
 } = require("../db/chatRooms.repository");
 
+const isChatUnavailableError = (message = "") =>
+	message === "Database unavailable" ||
+	/EAI_AGAIN|ECONNREFUSED|ENOTFOUND|querySrv/i.test(message);
+
 router.get("/chat/rooms", eventsLimiter, async (_req, res) => {
 	try {
 		if (!isChatDatabaseEnabled()) {
@@ -25,6 +29,12 @@ router.get("/chat/rooms", eventsLimiter, async (_req, res) => {
 			data: rooms,
 		});
 	} catch (err) {
+		if (isChatUnavailableError(err.message)) {
+			return res.status(503).json({
+				success: false,
+				error: "Chat service temporarily unavailable",
+			});
+		}
 		logger.error(`List chat rooms error: ${err.message}`, "chat.routes");
 		res.status(500).json({ success: false, error: "Internal Server Error" });
 	}
@@ -46,6 +56,12 @@ router.post("/chat/rooms", eventsLimiter, async (req, res) => {
 			data: room,
 		});
 	} catch (err) {
+		if (isChatUnavailableError(err.message)) {
+			return res.status(503).json({
+				success: false,
+				error: "Chat service temporarily unavailable",
+			});
+		}
 		if (err.message === "Room name already exists") {
 			return res.status(409).json({ success: false, error: err.message });
 		}

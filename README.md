@@ -18,11 +18,11 @@ World-Monitor (GeoPulse) is an advanced, AI-powered geopolitical intelligence da
 ## 🛠️ Technology Stack
 
 ### Frontend
-*   **Framework:** React 19, React Router v7
+*   **Framework:** Preact (React-compat), React Router v7
 *   **Styling:** Tailwind CSS, Radix UI primitives, Framer Motion
 *   **Visualization:** `react-globe.gl`, `react-leaflet`, `d3-force`, `recharts`
 *   **State & Networking:** Axios, Socket.io-client
-*   **Build Tool:** Create React App (CRA) via Craco
+*   **Build Tool:** Vite + Preact preset
 
 ### Backend
 *   **Runtime:** Node.js, Express.js
@@ -80,7 +80,7 @@ Follow these instructions to set up the project locally.
    ```
 3. Create a `.env` file in the `frontend` folder:
    ```env
-   REACT_APP_API_URL=http://localhost:5000
+   REACT_APP_BACKEND_URL=http://localhost:5000
    ```
 4. Start the development server:
    ```bash

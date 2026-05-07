@@ -54,7 +54,11 @@ router.get("/articles/trending", eventsLimiter, async (req, res) => {
 
 		let items = [];
 		if (isDatabaseEnabled()) {
-			items = await getTrendingEvents({ limit, days });
+			try {
+				items = await getTrendingEvents({ limit, days });
+			} catch (err) {
+				logger.warn(`Trending DB read unavailable, using cache fallback: ${err.message}`, "data.routes");
+			}
 		}
 
 		if (items.length === 0) {

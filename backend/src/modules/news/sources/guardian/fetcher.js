@@ -1,5 +1,4 @@
 const axios = require("axios");
-const config = require("../../../../config/env.js");
 const logger = require("../../../../utils/logger.js");
 
 const GUARDIAN_API_URL = "https://content.guardianapis.com/search";

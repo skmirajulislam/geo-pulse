@@ -85,7 +85,7 @@ start_services() {
   info "Starting frontend on port ${FRONTEND_PORT}"
   (
     cd "${FRONTEND_DIR}"
-    PORT="${FRONTEND_PORT}" BROWSER=none npm start
+    PORT="${FRONTEND_PORT}" npm run dev
   ) &
   FRONTEND_PID=$!
 }

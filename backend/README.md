@@ -44,19 +44,28 @@ Copy `.env.example` and fill in your values.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `PORT` | ✅ | 5000 | API server port |
+| `NODE_ENV` | — | development | Node runtime mode |
 | `CORS_ORIGIN` | — | (all) | Comma-separated allowed frontend origins |
 | `NEWS_API_KEY` | ✅ | — | NewsAPI.org API key |
-| `GUARDIAN_API_KEY` | ✅ | — | The Guardian API key |
-| `GROQ_API_KEY` | ✅ | — | Groq / OpenAI-compatible LLM API key |
-| `LLM_MODEL` | ✅ | — | Model name (e.g. `llama-3.3-70b-versatile`) |
+| `GUARDIAN_API_KEY` | — | `test` (dev fallback) | The Guardian API key |
+| `GROQ_API_KEY` | ✅* | — | Single Groq / OpenAI-compatible LLM API key |
+| `GROQ_API_KEYS` | ✅* | — | Comma-separated Groq keys (preferred for rotation) |
+| `GEMINI_API_KEY` | — | — | Single Gemini API key (fallback provider) |
+| `GEMINI_API_KEYS` | — | — | Comma-separated Gemini keys |
+| `LLM_MODEL` | — | `llama-3.3-70b-versatile` | Groq model name |
+| `GEMINI_MODEL` | — | `gemini-2.0-flash` | Gemini model name |
 | `LLM_BATCH_SIZE` | — | 5 | Articles per LLM batch call |
 | `MAX_ARTICLES_PER_RUN` | — | 120 | Hard cap on articles entering the pipeline per run |
 | `MAX_LLM_CALLS_PER_RUN` | — | 30 | Max LLM API calls per pipeline run |
 | `LLM_CONFIDENCE_THRESHOLD` | — | 0.4 | Minimum LLM confidence to accept an event |
+| `LLM_QUOTA_COOLDOWN_MS` | — | 60000 | Key cooldown after quota/rate-limit errors |
 | `RSS_PER_FEED_LIMIT` | — | 25 | Max items fetched per RSS feed |
 | `PIPELINE_INTERVAL_MINUTES` | — | 15 | Cron run interval |
+| `PIPELINE_ENABLED` | — | true | Enable scheduled pipeline execution on this process |
+| `SKIP_INITIAL_PIPELINE` | — | false | Skip immediate startup pipeline run |
 | `MONGODB_URI` | — | (disabled) | MongoDB connection string (skip = cache-only mode) |
 | `MONGODB_DB_NAME` | — | world_monitor | Database name |
+| `MONGO_RETRY_COOLDOWN_MS` | — | 60000 | Cooldown before retrying failed MongoDB connections |
 | `RETENTION_DAYS` | — | 15 | Data retention window (auto-delete after N days) |
 | `REDIS_URL` | — | — | Cloud Redis URL (`rediss://...`). Overrides HOST/PORT |
 | `REDIS_HOST` | — | 127.0.0.1 | Local Redis host |
@@ -68,6 +77,10 @@ Copy `.env.example` and fill in your values.
 | `REDIS_CONNECT_TIMEOUT_MS` | — | 10000 | Redis connect timeout |
 | `REDIS_CACHE_TTL_SECONDS` | — | 1296000 (15d) | Per-key TTL in Redis |
 | `REDIS_MAX_ARCHIVE_DATES` | — | 45 | Max daily snapshot keys kept in Redis |
+| `REDIS_MAX_MEMORY_MB` | — | 30 | Redis memory quota used by memory guard |
+| `REDIS_EVICTION_THRESHOLD_PCT` | — | 85 | Percent of quota that triggers eviction |
+
+\* Provide at least one Groq key via `GROQ_API_KEY` or `GROQ_API_KEYS`.
 
 ---
 
