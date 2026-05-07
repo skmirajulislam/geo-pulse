@@ -2,6 +2,12 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.8",
@@ -32,11 +38,9 @@
     "@radix-ui/react-toggle-group": "^1.1.7",
     "@radix-ui/react-tooltip": "^1.2.4",
     "axios": "^1.8.4",
-    "babel-loader": "^10.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "cra-template": "1.2.0",
     "d3-force": "^3.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
@@ -46,15 +50,14 @@
     "lucide-react": "^0.507.0",
     "next-themes": "^0.4.6",
     "osmtogeojson": "^3.0.0-beta.5",
-    "react": "^19.0.0",
-    "react-day-picker": "8.10.1",
-    "react-dom": "^19.0.0",
+    "preact": "^10.26.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-globe.gl": "^2.37.1",
     "react-hook-form": "^7.56.2",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "^4.2.1",
     "react-resizable-panels": "^3.0.1",
     "react-router-dom": "^7.5.1",
-    "react-scripts": "5.0.1",
     "recharts": "^3.6.0",
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.3",
@@ -64,38 +67,11 @@
     "vaul": "^1.1.2",
     "zod": "^3.24.4"
   },
-  "scripts": {
-    "dev": "craco start",
-    "build": "craco build",
-    "test": "craco test"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@craco/craco": "^7.1.0",
-    "@emergentbase/visual-edits": "https://assets.emergent.sh/npm/emergentbase-visual-edits-1.0.8.tgz",
-    "@eslint/js": "9.23.0",
-    "ajv": "^8.18.0",
+    "@preact/preset-vite": "^2.10.2",
     "autoprefixer": "^10.4.20",
-    "eslint": "9.23.0",
-    "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-jsx-a11y": "6.10.2",
-    "eslint-plugin-react": "7.37.4",
-    "eslint-plugin-react-hooks": "5.2.0",
-    "globals": "15.15.0",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "tailwindcss": "^3.4.17",
+    "vite": "^7.0.4"
+  }
 }

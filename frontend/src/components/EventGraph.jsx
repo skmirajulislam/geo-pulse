@@ -61,31 +61,7 @@ export default function EventGraph({ isOpen, onClose, allEvents = [] }) {
     if (isOpen && !graphData) buildGraph();
   }, [isOpen, graphData, buildGraph]);
 
-  useEffect(() => {
-    if (!graphData || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.offsetWidth * 2;
-    const height = canvas.height = canvas.offsetHeight * 2;
-    ctx.scale(2, 2);
-
-    const nodes = graphData.nodes.map(n => ({ ...n, x: Math.random() * width / 2, y: Math.random() * height / 2 }));
-    const edges = graphData.edges.map(e => ({ ...e }));
-    nodesRef.current = nodes;
-    edgesRef.current = edges;
-
-    const simulation = d3Force.forceSimulation(nodes)
-      .force('charge', d3Force.forceManyBody().strength(-200))
-      .force('center', d3Force.forceCenter(width / 4, height / 4))
-      .force('link', d3Force.forceLink(edges).id(d => d.id).distance(120).strength(0.5))
-      .force('collision', d3Force.forceCollide().radius(30))
-      .on('tick', () => draw(ctx, nodes, edges, width / 2, height / 2));
-
-    simulationRef.current = simulation;
-    return () => simulation.stop();
-  }, [graphData, scale]);
-
-  const draw = (ctx, nodes, edges, w, h) => {
+  const draw = useCallback((ctx, nodes, edges, w, h) => {
     ctx.clearRect(0, 0, w, h);
     ctx.save();
 
@@ -153,7 +129,31 @@ export default function EventGraph({ isOpen, onClose, allEvents = [] }) {
     });
 
     ctx.restore();
-  };
+  }, [hoveredNode]);
+
+  useEffect(() => {
+    if (!graphData || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.offsetWidth * 2;
+    const height = canvas.height = canvas.offsetHeight * 2;
+    ctx.scale(2, 2);
+
+    const nodes = graphData.nodes.map(n => ({ ...n, x: Math.random() * width / 2, y: Math.random() * height / 2 }));
+    const edges = graphData.edges.map(e => ({ ...e }));
+    nodesRef.current = nodes;
+    edgesRef.current = edges;
+
+    const simulation = d3Force.forceSimulation(nodes)
+      .force('charge', d3Force.forceManyBody().strength(-200))
+      .force('center', d3Force.forceCenter(width / 4, height / 4))
+      .force('link', d3Force.forceLink(edges).id(d => d.id).distance(120).strength(0.5))
+      .force('collision', d3Force.forceCollide().radius(30))
+      .on('tick', () => draw(ctx, nodes, edges, width / 2, height / 2));
+
+    simulationRef.current = simulation;
+    return () => simulation.stop();
+  }, [graphData, draw]);
 
   return (
     <AnimatePresence>
