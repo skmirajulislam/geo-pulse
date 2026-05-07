@@ -10,6 +10,7 @@
 const OpenAI = require("openai");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const logger = require("../utils/logger");
+const langcache = require("../cache/langcache.service");
 
 // ---------- CONFIG ----------
 const rawGroqKeys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || "";
@@ -152,11 +153,25 @@ const callGemini = async (poolObject, messages, { maxTokens = 2048, temperature 
 // ---------- MAIN ENTRY POINT ----------
 /**
  * Universal CHAT endpoint.
- * Iterates through Groq keys, then Gemini keys on failover.
+ * Checks LangCache first for semantic match, then iterates through
+ * Groq keys, then Gemini keys on failover. Stores result in LangCache.
  * @param {Array<{role: string, content: string}>} messages - OpenAI-format messages
  * @param {Object} opts - { maxTokens, temperature }
  */
 const chat = async (messages, opts = {}) => {
+	// 0. Check LangCache for a semantic hit
+	const cached = await langcache.search(messages);
+	if (cached) {
+		return {
+			content: cached.content,
+			provider: "langcache",
+			model: "semantic-cache",
+			id: "LangCache",
+			cached: true,
+			similarity: cached.similarity,
+		};
+	}
+
 	const errors = [];
 	
 	// 1. Try Groq Pool
@@ -168,6 +183,8 @@ const chat = async (messages, opts = {}) => {
 		try {
 			logger.info(`[llm-pool] Trying ${groqHealthy.id}`, "llm");
 			const result = await callGroq(groqHealthy, messages, opts);
+			// Store in LangCache for future semantic hits
+			await langcache.store(messages, result.content);
 			return result;
 		} catch (err) {
 			logger.error(`[llm-pool] ${groqHealthy.id} failed — ${err.message}`, "llm");
@@ -190,6 +207,8 @@ const chat = async (messages, opts = {}) => {
 		try {
 			logger.info(`[llm-pool] Trying ${geminiHealthy.id}`, "llm");
 			const result = await callGemini(geminiHealthy, messages, opts);
+			// Store in LangCache for future semantic hits
+			await langcache.store(messages, result.content);
 			return result;
 		} catch (err) {
 			logger.error(`[llm-pool] ${geminiHealthy.id} failed — ${err.message}`, "llm");
@@ -236,6 +255,9 @@ const getProviderStatus = () => {
 		},
 	};
 };
+
+// Log LangCache status on startup
+langcache.logStatus();
 
 module.exports = {
 	chat,

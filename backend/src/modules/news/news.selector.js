@@ -72,6 +72,18 @@ exports.selectUniqueFifo = async (events = []) => {
       continue;
     }
 
+    // 2) Check against existing cache for this date.
+    if (existsInIndex(identity, cacheIndex)) {
+      rejected.push({ event, reason: "cache_duplicate" });
+      continue;
+    }
+
+    // 3) Check against DB records within retention window.
+    if (existsInIndex(identity, dbIndex)) {
+      rejected.push({ event, reason: "db_duplicate" });
+      continue;
+    }
+
     selected.push({
       ...event,
       canonical_url: identity.canonicalUrl,

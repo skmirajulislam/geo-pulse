@@ -6,110 +6,45 @@ const { eventsLimiter, datesLimiter } = require("../middleware/rateLimiter");
 
 const { getWeatherEvents } = require("../modules/weather/weather.service");
 
-// ---------- CATEGORY MAPPING ----------
+// ---------- WEATHER CATEGORY MAPPING ----------
 const CATEGORY_MAP = {
-	// Armed Conflict
-	war: "Armed Conflict",
-	attack: "Armed Conflict",
-	airstrike: "Armed Conflict",
-	battle: "Armed Conflict",
-	conflict: "Armed Conflict",
-	clash: "Armed Conflict",
-	bombing: "Armed Conflict",
-	shelling: "Armed Conflict",
-	invasion: "Armed Conflict",
-	siege: "Armed Conflict",
-	insurgency: "Armed Conflict",
-	ambush: "Armed Conflict",
-	military: "Armed Conflict",
-	hostage: "Armed Conflict",
+	// Seismic
+	earthquake: "Seismic & Volcanic",
+	volcano: "Seismic & Volcanic",
+	tsunami: "Seismic & Volcanic",
+	landslide: "Seismic & Volcanic",
+	avalanche: "Seismic & Volcanic",
 
-	// Politics
-	policy: "Politics",
-	legislation: "Politics",
-	reform: "Politics",
-	law: "Politics",
-	election: "Politics",
-	coup: "Politics",
-	protest: "Politics",
-	uprising: "Politics",
-	riot: "Politics",
-	crackdown: "Politics",
-	referendum: "Politics",
-	"regime change": "Politics",
+	// Storms
+	hurricane: "Storms",
+	typhoon: "Storms",
+	cyclone: "Storms",
+	tornado: "Storms",
+	storm: "Storms",
+	blizzard: "Storms",
+	monsoon: "Storms",
 
-	// Diplomacy
-	diplomacy: "Diplomacy",
-	negotiation: "Diplomacy",
-	summit: "Diplomacy",
-	treaty: "Diplomacy",
-	alliance: "Diplomacy",
-	sanction: "Diplomacy & Sanctions",
-	embargo: "Diplomacy & Sanctions",
-	blockade: "Diplomacy & Sanctions",
-	tension: "Diplomacy",
-	threat: "Diplomacy",
+	// Fire & Heat
+	wildfire: "Fire & Heat",
+	heatwave: "Fire & Heat",
+	drought: "Fire & Heat",
 
-	// Terrorism & Security
-	assassination: "Terrorism & Security",
-	operation: "Terrorism & Security",
+	// Flooding & Water
+	flood: "Flooding & Water",
+	coldwave: "Extreme Cold",
 
-	// Cyber & Tech
-	espionage: "Cyber & Tech",
-	cyberattack: "Cyber & Tech",
-	hacking: "Cyber & Tech",
-	surveillance: "Cyber & Tech",
-	technology: "Cyber & Tech",
-
-	// Environment & Climate
-	environment: "Environment & Climate",
-	earthquake: "Environment & Climate",
-	weather: "Environment & Climate",
-
-	// Health & Disaster
-	pandemic: "Health & Disaster",
-	disaster: "Health & Disaster",
-	crisis: "Health & Disaster",
-	humanitarian: "Health & Disaster",
-	humanitariancrisis: "Health & Disaster",
-	refugee: "Health & Disaster",
-	displacement: "Health & Disaster",
-	famine: "Health & Disaster",
-	evacuation: "Health & Disaster",
-	"mass-death": "Health & Disaster",
-	health: "Health & Disaster",
-
-	// Global Economy
-	tradewar: "Global Economy",
-	tariff: "Global Economy",
-	armsdeal: "Global Economy",
-	economy: "Global Economy",
-	business: "Global Economy",
-	market: "Global Economy",
-
-	// Catch-alls that fit specific buckets
-	politics: "Politics",
-	terrorism: "Terrorism & Security",
-	crime: "Terrorism & Security",
-	lawenforcement: "Terrorism & Security",
-	social: "Politics",
-	media: "Politics",
-	culture: "Other",
-	death: "Health & Disaster",
-	policychange: "Politics",
+	// General
+	weather: "General Weather",
 };
 
 // Fallback category ordering for display
 const CATEGORY_ORDER = [
-	"Armed Conflict",
-	"Terrorism & Security",
-	"Cyber & Tech",
-	"Politics",
-	"Diplomacy",
-	"Diplomacy & Sanctions",
-	"Global Economy",
-	"Health & Disaster",
-	"Environment & Climate",
+	"Seismic & Volcanic",
+	"Storms",
+	"Fire & Heat",
+	"Flooding & Water",
+	"Extreme Cold",
+	"General Weather",
 	"Other",
 ];
 

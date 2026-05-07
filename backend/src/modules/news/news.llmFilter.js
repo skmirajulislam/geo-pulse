@@ -206,10 +206,8 @@ exports.llmFilter = async (articles = []) => {
 				const type = normalizeEventType(item.event_type);
 
 				// Accept the event even if type isn't in our list — use LLM's type as-is
-				const finalType = ALLOWED_TYPES.includes(type) ? type : type;
-
 				results.push({
-					event_type: finalType,
+					event_type: type,
 					country: cleanCountry(item.country),
 					coordinates: Array.isArray(item.coordinates) && item.coordinates.length === 2 && typeof item.coordinates[0] === "number" ? item.coordinates : null,
 					severity: Math.min(Math.max(item.severity || 2, 1), 5),

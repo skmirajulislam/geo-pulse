@@ -4,7 +4,7 @@ import { X, Loader2, Zap, TrendingUp, TrendingDown, Minus, AlertTriangle, Clock,
 import axios from 'axios';
 import './component-css/SimulationPanel.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+import { BACKEND_URL } from '../services/api';
 
 const SEVERITY_COLORS = ['#22C55E', '#22C55E', '#84CC16', '#F59E0B', '#F59E0B', '#FF8A00', '#FF8A00', '#FF3B30', '#FF3B30', '#DC2626', '#DC2626'];
 const MARKET_ICONS = { up: TrendingUp, down: TrendingDown, stable: Minus };

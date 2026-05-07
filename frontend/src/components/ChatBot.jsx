@@ -4,7 +4,7 @@ import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import './component-css/ChatBot.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+import { BACKEND_URL } from '../services/api';
 
 /**
  * ChatBot — AI-powered geopolitical intelligence assistant.

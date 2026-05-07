@@ -17,7 +17,7 @@ import {
 
 /* ─────────────────────────── constants ───────────────────────────── */
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
+import { BACKEND_URL } from '../services/api';
 
 const LIVE_CHANNELS = [
   { id: 'bbc',  name: 'BBC News',        embedUrl: 'https://www.youtube.com/embed/gCNeDWCI0vo', externalUrl: 'https://www.youtube.com/watch?v=gCNeDWCI0vo' },

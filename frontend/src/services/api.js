@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
+export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5050';
 const BASE_API_URL = `${BACKEND_URL}/api`;
 const API_URL = `${BACKEND_URL}/api/geopolitics`;
 
@@ -100,7 +100,7 @@ export const fetchGeopoliticsData = async (date = null) => {
   });
 
   // Sort newest-first
-  allEvents.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+  allEvents.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
 
   return {
     events: allEvents,

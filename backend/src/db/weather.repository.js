@@ -1,15 +1,10 @@
-const { MongoClient } = require("mongodb");
+const { isDatabaseEnabled, getDb } = require("./mongoClient");
 const logger = require("../utils/logger");
 
 const RETENTION_DAYS = Number(process.env.RETENTION_DAYS || 15);
 const RETENTION_SECONDS = RETENTION_DAYS * 24 * 60 * 60;
-const MONGO_RETRY_COOLDOWN_MS = Number(process.env.MONGO_RETRY_COOLDOWN_MS || 60000);
 
-let client = null;
 let collection = null;
-let mongoBackoffUntil = 0;
-
-const isDatabaseEnabled = () => Boolean(process.env.MONGODB_URI);
 
 const mapDocToEvent = (doc) => ({
 	id: doc.id,
@@ -42,34 +37,14 @@ const ensureIndexes = async () => {
 const getCollection = async () => {
 	if (!isDatabaseEnabled()) return null;
 	if (collection) return collection;
-	if (Date.now() < mongoBackoffUntil) return null;
 
-	const mongoUri = process.env.MONGODB_URI;
-	const dbName = process.env.MONGODB_DB_NAME || "world_monitor";
+	const db = await getDb();
+	if (!db) return null;
 
-	try {
-		client = new MongoClient(mongoUri, {
-			maxPoolSize: 20,
-			minPoolSize: 2,
-		});
-
-		await client.connect();
-		collection = client.db(dbName).collection("weather_events");
-		await ensureIndexes();
-		mongoBackoffUntil = 0;
-		logger.info(`MongoDB connected (${dbName}.weather_events)`, "db.weather");
-		return collection;
-	} catch (err) {
-		mongoBackoffUntil = Date.now() + MONGO_RETRY_COOLDOWN_MS;
-		if (client) {
-			try {
-				await client.close();
-			} catch (_closeErr) {}
-		}
-		client = null;
-		collection = null;
-		throw err;
-	}
+	collection = db.collection("weather_events");
+	await ensureIndexes();
+	logger.info(`MongoDB collection ready (weather_events)`, "db.weather");
+	return collection;
 };
 
 exports.isDatabaseEnabled = isDatabaseEnabled;
@@ -84,11 +59,7 @@ exports.connectWeatherRepository = async () => {
 };
 
 exports.closeWeatherRepository = async () => {
-	if (!client) return;
-	await client.close();
-	client = null;
 	collection = null;
-	mongoBackoffUntil = 0;
 };
 
 exports.upsertWeatherEvents = async (events = []) => {

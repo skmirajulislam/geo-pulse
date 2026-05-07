@@ -1,13 +1,10 @@
-const { MongoClient, ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
 const { randomUUID } = require("crypto");
+const { isDatabaseEnabled, getDb } = require("./mongoClient");
 const logger = require("../utils/logger");
 
-let client = null;
 let collection = null;
-const MONGO_RETRY_COOLDOWN_MS = Number(process.env.MONGO_RETRY_COOLDOWN_MS || 60000);
-let mongoBackoffUntil = 0;
 
-const isDatabaseEnabled = () => Boolean(process.env.MONGODB_URI);
 
 const toRoomResponse = (doc) => ({
 	id: doc._id.toString(),
@@ -30,38 +27,18 @@ const normalizeName = (value) => value.trim().toLowerCase();
 const getCollection = async () => {
 	if (!isDatabaseEnabled()) return null;
 	if (collection) return collection;
-	if (Date.now() < mongoBackoffUntil) return null;
 
-	const mongoUri = process.env.MONGODB_URI;
-	const dbName = process.env.MONGODB_DB_NAME || "world_monitor";
+	const db = await getDb();
+	if (!db) return null;
 
-	try {
-		client = new MongoClient(mongoUri, {
-			maxPoolSize: 20,
-			minPoolSize: 2,
-		});
-		await client.connect();
-
-		collection = client.db(dbName).collection("chat_rooms");
-		await Promise.all([
-			collection.createIndex({ roomNameNormalized: 1 }, { unique: true }),
-			collection.createIndex({ updatedAt: -1 }),
-			collection.createIndex({ lastInteractionAt: 1 }),
-		]);
-		mongoBackoffUntil = 0;
-		logger.info(`MongoDB connected (${dbName}.chat_rooms)`, "db.chat");
-		return collection;
-	} catch (err) {
-		mongoBackoffUntil = Date.now() + MONGO_RETRY_COOLDOWN_MS;
-		if (client) {
-			try {
-				await client.close();
-			} catch (_closeErr) {}
-		}
-		client = null;
-		collection = null;
-		throw err;
-	}
+	collection = db.collection("chat_rooms");
+	await Promise.all([
+		collection.createIndex({ roomNameNormalized: 1 }, { unique: true }),
+		collection.createIndex({ updatedAt: -1 }),
+		collection.createIndex({ lastInteractionAt: 1 }),
+	]);
+	logger.info(`MongoDB collection ready (chat_rooms)`, "db.chat");
+	return collection;
 };
 
 const touchRoom = async (roomId) => {
@@ -87,11 +64,7 @@ exports.connectChatRoomsRepository = async () => {
 };
 
 exports.closeChatRoomsRepository = async () => {
-	if (!client) return;
-	await client.close();
-	client = null;
 	collection = null;
-	mongoBackoffUntil = 0;
 };
 
 exports.createRoom = async ({ roomName, topic = "", ownerName }) => {

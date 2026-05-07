@@ -48,11 +48,10 @@ logger.info(
 );
 
 if (_isCloudHost && !tlsEnabled) {
-	logger.warn(
-		"Redis is connecting to a cloud host WITHOUT TLS. " +
-		"Credentials travel unencrypted. To enable TLS: " +
+	logger.info(
+		"Redis connecting without TLS. To enable TLS: " +
 		"get the TLS port from your Redis Cloud dashboard, " +
-		"set REDIS_URL=rediss://... (note: rediss with double-s) and REDIS_TLS=true.",
+		"update REDIS_URL to rediss://... (double-s) and set REDIS_TLS=true.",
 		"redis"
 	);
 }

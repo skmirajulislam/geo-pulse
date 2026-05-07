@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
 		define: {
 			"process.env": {
 				NODE_ENV: mode,
-				REACT_APP_BACKEND_URL: env.REACT_APP_BACKEND_URL || "http://localhost:8080",
+				REACT_APP_BACKEND_URL: env.REACT_APP_BACKEND_URL || "http://localhost:5050",
 				ENABLE_HEALTH_CHECK: env.ENABLE_HEALTH_CHECK || "false",
 			},
 		},

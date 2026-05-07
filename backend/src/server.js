@@ -20,6 +20,7 @@ const {
 	closeChatRoomsRepository,
 	isChatDatabaseEnabled,
 } = require("./db/chatRooms.repository");
+const { closeSharedClient } = require("./db/mongoClient");
 const {
 	registerChatSocket,
 	startInactiveRoomCleanup,
@@ -118,6 +119,7 @@ process.on("SIGINT", () => {
 	logger.warn("SIGINT received. Shutting down...", "server");
 	server.close(() => {
 		Promise.all([closeEventsRepository(), closeWeatherRepository(), closeChatRoomsRepository()])
+			.then(() => closeSharedClient())
 			.then(() => {
 				logger.info("Server closed", "server");
 				process.exit(0);
@@ -130,6 +132,7 @@ process.on("SIGTERM", () => {
 	logger.warn("SIGTERM received. Shutting down...", "server");
 	server.close(() => {
 		Promise.all([closeEventsRepository(), closeWeatherRepository(), closeChatRoomsRepository()])
+			.then(() => closeSharedClient())
 			.then(() => {
 				logger.info("Server closed", "server");
 				process.exit(0);
