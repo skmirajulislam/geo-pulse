@@ -156,6 +156,58 @@ const cleanCountry = (country) => {
 	return cleaned || "Global";
 };
 
+const COUNTRY_HINTS = [
+	{ country: "India", coords: [20.5937, 78.9629], terms: ["india", "new delhi", "delhi", "mumbai", "kashmir", "modi"] },
+	{ country: "Pakistan", coords: [30.3753, 69.3451], terms: ["pakistan", "islamabad", "lahore", "karachi"] },
+	{ country: "Bangladesh", coords: [23.685, 90.3563], terms: ["bangladesh", "dhaka"] },
+	{ country: "Sri Lanka", coords: [7.8731, 80.7718], terms: ["sri lanka", "colombo"] },
+	{ country: "Nepal", coords: [28.3949, 84.124], terms: ["nepal", "kathmandu"] },
+	{ country: "Myanmar", coords: [21.9162, 95.956], terms: ["myanmar", "yangon", "naypyidaw"] },
+	{ country: "Afghanistan", coords: [33.9391, 67.71], terms: ["afghanistan", "kabul", "taliban"] },
+	{ country: "China", coords: [35.8617, 104.1954], terms: ["china", "beijing", "taiwan"] },
+	{ country: "Russia", coords: [61.524, 105.3188], terms: ["russia", "moscow", "kremlin"] },
+	{ country: "Ukraine", coords: [48.3794, 31.1656], terms: ["ukraine", "kyiv", "zelensky"] },
+	{ country: "Israel", coords: [31.0461, 34.8516], terms: ["israel", "jerusalem", "tel aviv"] },
+	{ country: "Gaza", coords: [31.5017, 34.4668], terms: ["gaza", "hamas"] },
+	{ country: "Iran", coords: [32.4279, 53.688], terms: ["iran", "tehran"] },
+	{ country: "United States", coords: [37.0902, -95.7129], terms: ["united states", "u.s.", "us ", "america", "washington"] },
+	{ country: "United Kingdom", coords: [55.3781, -3.436], terms: ["united kingdom", "uk ", "britain", "london"] },
+];
+
+const EVENT_TYPE_HINTS = [
+	{ event_type: "conflict", severity: 4, terms: ["war", "attack", "missile", "bomb", "military", "troops", "ceasefire", "clash"] },
+	{ event_type: "diplomacy", severity: 3, terms: ["diplomacy", "summit", "talks", "treaty", "foreign minister"] },
+	{ event_type: "politics", severity: 3, terms: ["election", "parliament", "government", "minister", "court", "law", "policy"] },
+	{ event_type: "crisis", severity: 4, terms: ["crisis", "refugee", "humanitarian", "famine", "displacement"] },
+	{ event_type: "economy", severity: 3, terms: ["tariff", "sanction", "economy", "trade", "market", "business"] },
+	{ event_type: "disaster", severity: 4, terms: ["earthquake", "flood", "cyclone", "storm", "wildfire", "disaster"] },
+	{ event_type: "cyberattack", severity: 3, terms: ["cyber", "hack", "ransomware", "surveillance"] },
+];
+
+const includesAny = (text, terms) => terms.some((term) => text.includes(term));
+
+const buildHeuristicEvent = (article) => {
+	const text = `${article.title || ""} ${article.description || ""}`.toLowerCase();
+	const countryHint = COUNTRY_HINTS.find((hint) => includesAny(text, hint.terms));
+	const typeHint = EVENT_TYPE_HINTS.find((hint) => includesAny(text, hint.terms));
+
+	if (!countryHint && !typeHint && !isMajorEvent(article.title || "")) return null;
+
+	return {
+		event_type: typeHint?.event_type || "politics",
+		country: countryHint?.country || "Global",
+		coordinates: countryHint?.coords || null,
+		severity: typeHint?.severity || 2,
+		confidence: countryHint || typeHint ? 0.55 : 0.4,
+		title: article.title,
+			description: article.description,
+			source: article.source,
+			sourceRegion: article.sourceRegion,
+			url: article.url,
+		timestamp: new Date(article.publishedAt || Date.now()).toISOString(),
+	};
+};
+
 // ---------- MAIN ----------
 exports.llmFilter = async (articles = []) => {
 	logger.info("Running LLM filter...", "news.llmFilter");
@@ -219,12 +271,17 @@ exports.llmFilter = async (articles = []) => {
 					title: original.title,
 					description: original.description,
 					source: original.source,
+					sourceRegion: original.sourceRegion,
 					url: original.url,
 					timestamp: new Date(original.publishedAt).toISOString(),
 				});
 			});
 		} catch (err) {
-			logger.error("LLM batch failed", "news.llmFilter");
+			logger.error("LLM batch failed; using heuristic fallback", "news.llmFilter");
+			batch.forEach((article) => {
+				const fallback = buildHeuristicEvent(article);
+				if (fallback) results.push(fallback);
+			});
 		}
 	}
 

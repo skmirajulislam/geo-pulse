@@ -52,6 +52,12 @@ const WHITELIST = [
 	"election",
 	"referendum",
 	"parliament",
+	"government",
+	"minister",
+	"supreme court",
+	"court",
+	"law",
+	"policy",
 	"authoritarian",
 	"regime",
 	"opposition",
@@ -85,6 +91,18 @@ const WHITELIST = [
 	"weapons",
 	"defense",
 	"defence",
+
+	// Regional coverage terms that are often underrepresented in global feeds
+	"india",
+	"pakistan",
+	"bangladesh",
+	"sri lanka",
+	"nepal",
+	"myanmar",
+	"afghanistan",
+	"border",
+	"kashmir",
+	"south asia",
 ];
 
 // Non-geopolitical keywords (reject if ONLY these appear)

@@ -18,6 +18,7 @@ exports.normalizeRSS = (items = []) => {
         description: description.slice(0, 600),
         url: item.link,
         source: item.creator || item._feedSource || "RSS",
+        sourceRegion: item._feedRegion || "Global",
         publishedAt,
       };
     });

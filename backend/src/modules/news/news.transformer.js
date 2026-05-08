@@ -72,6 +72,7 @@ exports.transformEvents = (events = []) => {
 					{
 						name: e.source,
 						url: e.url,
+						region: e.sourceRegion || "Global",
 					},
 				],
 			};

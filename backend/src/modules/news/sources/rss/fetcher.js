@@ -11,18 +11,46 @@ const parser = new Parser({
 });
 
 const RSS_FEEDS = [
-  { url: "http://feeds.bbci.co.uk/news/world/rss.xml",                     source: "BBC World" },
-  { url: "https://www.aljazeera.com/xml/rss/all.xml",                      source: "Al Jazeera" },
-  { url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",         source: "NY Times World" },
-  { url: "http://rss.cnn.com/rss/edition_world.rss",                       source: "CNN World" },
-  { url: "https://feeds.washingtonpost.com/rss/world",                     source: "Washington Post" },
-  { url: "https://www.theguardian.com/world/rss",                          source: "The Guardian World" },
-  // Reuters shut down public RSS in 2020 (feeds.reuters.com → ENOTFOUND)
-  // Replaced with AP News (hosted via Google News) and DW for geographic diversity
-  { url: "https://rss.dw.com/rdf/rss-en-world",                           source: "DW World" },
-  { url: "https://news.un.org/feed/subscribe/en/news/all/rss.xml",        source: "UN News" },
-  { url: "https://reliefweb.int/updates/rss.xml",                         source: "ReliefWeb" },
-  { url: "https://feeds.npr.org/1004/rss.xml",                            source: "NPR World" },
+  // Global baseline
+  { region: "Global", url: "http://feeds.bbci.co.uk/news/world/rss.xml", source: "BBC World" },
+  { region: "Global", url: "https://www.aljazeera.com/xml/rss/all.xml", source: "Al Jazeera" },
+  { region: "Global", url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", source: "NY Times World" },
+  { region: "Global", url: "https://rss.dw.com/rdf/rss-en-world", source: "DW World" },
+  { region: "Global", url: "https://news.un.org/feed/subscribe/en/news/all/rss.xml", source: "UN News" },
+  { region: "Global", url: "https://reliefweb.int/updates/rss.xml", source: "ReliefWeb" },
+
+  // Africa
+  { region: "Africa", url: "http://feeds.bbci.co.uk/news/world/africa/rss.xml", source: "BBC Africa" },
+  { region: "Africa", url: "https://www.france24.com/en/africa/rss", source: "France 24 Africa" },
+  { region: "Africa", url: "https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf", source: "AllAfrica" },
+
+  // Asia
+  { region: "Asia", url: "http://feeds.bbci.co.uk/news/world/asia/rss.xml", source: "BBC Asia" },
+  { region: "Asia", url: "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511", source: "CNA Asia" },
+  { region: "Asia", url: "https://thediplomat.com/feed/", source: "The Diplomat" },
+  { region: "Asia", url: "https://asia.nikkei.com/rss/feed/nar", source: "Nikkei Asia" },
+  { region: "Asia", url: "https://indianexpress.com/section/india/feed/", source: "Indian Express India" },
+  { region: "Asia", url: "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml", source: "Hindustan Times India" },
+  { region: "Asia", url: "https://www.thehindu.com/news/national/feeder/default.rss", source: "The Hindu India" },
+
+  // Middle East
+  { region: "Middle East", url: "http://feeds.bbci.co.uk/news/world/middle_east/rss.xml", source: "BBC Middle East" },
+  { region: "Middle East", url: "https://www.france24.com/en/middle-east/rss", source: "France 24 Middle East" },
+  { region: "Middle East", url: "https://www.al-monitor.com/rss", source: "Al-Monitor" },
+
+  // Europe
+  { region: "Europe", url: "http://feeds.bbci.co.uk/news/world/europe/rss.xml", source: "BBC Europe" },
+  { region: "Europe", url: "https://www.france24.com/en/europe/rss", source: "France 24 Europe" },
+  { region: "Europe", url: "https://www.politico.eu/feed/", source: "Politico Europe" },
+
+  // Americas
+  { region: "Americas", url: "http://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml", source: "BBC US & Canada" },
+  { region: "Americas", url: "http://feeds.bbci.co.uk/news/world/latin_america/rss.xml", source: "BBC Latin America" },
+  { region: "Americas", url: "https://feeds.npr.org/1004/rss.xml", source: "NPR World" },
+
+  // Oceania / Australia-Pacific
+  { region: "Oceania", url: "https://www.abc.net.au/news/feed/51120/rss.xml", source: "ABC Australia" },
+  { region: "Oceania", url: "https://www.rnz.co.nz/rss/news.xml", source: "RNZ News" },
 ];
 
 exports.fetchFromRSS = async () => {
@@ -39,6 +67,7 @@ exports.fetchFromRSS = async () => {
         records.push({
           ...item,
           _feedSource: feed.source,
+          _feedRegion: feed.region,
         });
       }
 

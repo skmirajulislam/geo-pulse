@@ -10,6 +10,7 @@ exports.normalizeGuardian = (articles = []) => {
 			description: a.fields?.standfirst || a.webTitle,
 			url: a.webUrl,
 			source: "The Guardian",
+			sourceRegion: "Global",
 			publishedAt: a.webPublicationDate || new Date().toISOString(),
 		}));
 

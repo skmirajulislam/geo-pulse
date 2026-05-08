@@ -24,6 +24,22 @@ const isValidFacility = (facility) =>
   Number.isFinite(facility.lat) &&
   Number.isFinite(facility.lon);
 
+const applyCorrections = (facilities = [], corrections = []) => {
+  const byId = new Map(corrections.map((correction) => [correction.id, correction]));
+  return facilities.map((facility) => {
+    const correction = byId.get(facility.id);
+    if (!correction) return facility;
+    return {
+      ...facility,
+      city: correction.city || facility.city,
+      country: correction.country || facility.country,
+      lat: correction.lat,
+      lon: correction.lon,
+      coordinateQuality: correction.coordinateQuality || 'corrected',
+    };
+  });
+};
+
 export default function IaeaDiifFacilities() {
   const map = useMap();
   const [dataset, setDataset] = useState(null);
@@ -35,17 +51,26 @@ export default function IaeaDiifFacilities() {
 
     const loadData = async () => {
       try {
-        const [processedRes, rawRes] = await Promise.all([
-          fetch('/data/gamma-irradiators.json'),
-          fetch('/data/gamma-irradiators-raw.json'),
+        const [processedRes, rawRes, correctionsRes] = await Promise.all([
+          fetch('/data/gamma-irradiators.json?v=2026-05-08', { cache: 'no-store' }),
+          fetch('/data/gamma-irradiators-raw.json?v=2026-05-08', { cache: 'no-store' }),
+          fetch('/data/gamma-irradiators-coordinate-corrections.json?v=2026-05-08', { cache: 'no-store' }),
         ]);
 
         if (!processedRes.ok) throw new Error(`Processed DIIF HTTP ${processedRes.status}`);
         if (!rawRes.ok) throw new Error(`Raw DIIF HTTP ${rawRes.status}`);
 
-        const [processed, raw] = await Promise.all([processedRes.json(), rawRes.json()]);
+        const [processed, raw, correctionData] = await Promise.all([
+          processedRes.json(),
+          rawRes.json(),
+          correctionsRes.ok ? correctionsRes.json() : Promise.resolve({ corrections: [] }),
+        ]);
+        const correctedFacilities = applyCorrections(
+          processed.facilities || [],
+          correctionData.corrections || []
+        );
         if (!cancelled) {
-          setDataset(processed);
+          setDataset({ ...processed, facilities: correctedFacilities });
           setRawDataset(raw);
           setLoadError('');
         }

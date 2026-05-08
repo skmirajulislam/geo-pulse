@@ -14,14 +14,22 @@ const langcache = require("../cache/langcache.service");
 
 // ---------- CONFIG ----------
 const rawGroqKeys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || "";
-const groqKeys = rawGroqKeys.split(",").map(k => k.trim()).filter(Boolean);
 
 const rawGeminiKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || "";
-const geminiKeys = rawGeminiKeys.split(",").map(k => k.trim()).filter(Boolean);
+const PLACEHOLDER_PATTERNS = ["your_", "xxx", "placeholder", "changeme", "todo"];
+const isUsableApiKey = (key = "") => {
+	const value = key.trim();
+	if (!value) return false;
+	return !PLACEHOLDER_PATTERNS.some((pattern) => value.toLowerCase().includes(pattern));
+};
+
+const groqKeys = rawGroqKeys.split(",").map(k => k.trim()).filter(isUsableApiKey);
+const geminiKeys = rawGeminiKeys.split(",").map(k => k.trim()).filter(isUsableApiKey);
 
 const GROQ_MODEL = process.env.LLM_MODEL || "llama-3.3-70b-versatile";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 const LLM_TIMEOUT = Number(process.env.LLM_TIMEOUT || 30000);
+const KEY_USAGE_SWITCH_THRESHOLD = Number(process.env.LLM_KEY_USAGE_SWITCH_THRESHOLD || 0.8);
 
 // Cooldown: how long (ms) to skip an API key after a quota error (default 60s)
 const QUOTA_COOLDOWN_MS = Number(process.env.LLM_QUOTA_COOLDOWN_MS || 60000);
@@ -75,6 +83,57 @@ const markKeyExhausted = (poolObject) => {
 	);
 };
 
+const parseResetMs = (value) => {
+	if (!value) return QUOTA_COOLDOWN_MS;
+	const text = String(value).trim().toLowerCase();
+	const numeric = Number(text.replace(/[^0-9.]/g, ""));
+	if (!Number.isFinite(numeric)) return QUOTA_COOLDOWN_MS;
+	if (text.includes("ms")) return numeric;
+	if (text.includes("s")) return numeric * 1000;
+	if (text.includes("m")) return numeric * 60 * 1000;
+	if (text.includes("h")) return numeric * 60 * 60 * 1000;
+	return numeric * 1000;
+};
+
+const readNumericHeader = (headers, names = []) => {
+	for (const name of names) {
+		const value = headers?.get?.(name);
+		const parsed = Number(value);
+		if (Number.isFinite(parsed)) return parsed;
+	}
+	return null;
+};
+
+const updateKeyUsageFromHeaders = (poolObject, headers) => {
+	if (!headers || !poolObject) return;
+
+	const tokenLimit = readNumericHeader(headers, ["x-ratelimit-limit-tokens"]);
+	const tokenRemaining = readNumericHeader(headers, ["x-ratelimit-remaining-tokens"]);
+	const requestLimit = readNumericHeader(headers, ["x-ratelimit-limit-requests"]);
+	const requestRemaining = readNumericHeader(headers, ["x-ratelimit-remaining-requests"]);
+
+	const usageRatios = [];
+	if (tokenLimit > 0 && tokenRemaining !== null) usageRatios.push(1 - tokenRemaining / tokenLimit);
+	if (requestLimit > 0 && requestRemaining !== null) usageRatios.push(1 - requestRemaining / requestLimit);
+	if (!usageRatios.length) return;
+
+	const usageRatio = Math.max(...usageRatios);
+	poolObject.usageRatio = usageRatio;
+
+	if (usageRatio >= KEY_USAGE_SWITCH_THRESHOLD) {
+		const resetMs = Math.max(
+			parseResetMs(headers.get("x-ratelimit-reset-tokens")),
+			parseResetMs(headers.get("x-ratelimit-reset-requests")),
+			QUOTA_COOLDOWN_MS,
+		);
+		poolObject.cooldownUntil = Date.now() + resetMs;
+		logger.warn(
+			`[llm-pool] Key "${poolObject.id}" reached ${Math.round(usageRatio * 100)}% of reported rate window — rotating for ${Math.round(resetMs / 1000)}s`,
+			"llm"
+		);
+	}
+};
+
 /**
  * Iterates through a specific provider pool (e.g. groq or gemini) and returning the first healthy key.
  * Advances the round-robin index.
@@ -99,12 +158,19 @@ const getHealthyKey = (providerArray, currentIndexObj) => {
 
 // ---------- GROQ CALL ----------
 const callGroq = async (poolObject, messages, { maxTokens = 2048, temperature = 0.3 } = {}) => {
-	const response = await poolObject.client.chat.completions.create({
+	const apiCall = poolObject.client.chat.completions.create({
 		model: poolObject.model,
 		messages,
 		max_tokens: maxTokens,
 		temperature,
 	});
+
+	const { data: response, response: rawResponse } =
+		typeof apiCall.withResponse === "function"
+			? await apiCall.withResponse()
+			: { data: await apiCall, response: null };
+	updateKeyUsageFromHeaders(poolObject, rawResponse?.headers);
+
 	const choice = response.choices?.[0]?.message;
 	return {
 		content: choice?.content || choice?.reasoning || "",
@@ -242,16 +308,25 @@ const queryLLM = async (promptText) => {
  */
 const getProviderStatus = () => {
 	const now = Date.now();
+	const summarizeKeys = (keys) => keys.map((key) => ({
+		id: key.id,
+		available: now >= key.cooldownUntil,
+		cooldownRemainingMs: Math.max(0, key.cooldownUntil - now),
+		reportedUsagePercent: key.usageRatio === undefined ? null : Math.round(key.usageRatio * 100),
+	}));
+
 	return {
 		groq: {
 			totalKeys: pool.groq.length,
 			availableKeys: pool.groq.filter(k => now >= k.cooldownUntil).length,
 			model: GROQ_MODEL,
+			keys: summarizeKeys(pool.groq),
 		},
 		gemini: {
 			totalKeys: pool.gemini.length,
 			availableKeys: pool.gemini.filter(k => now >= k.cooldownUntil).length,
 			model: GEMINI_MODEL,
+			keys: summarizeKeys(pool.gemini),
 		},
 	};
 };

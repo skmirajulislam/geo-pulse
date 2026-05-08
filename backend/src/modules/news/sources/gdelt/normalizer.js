@@ -27,6 +27,7 @@ exports.normalizeGDELT = (articles = []) => {
 				description: a.title, // GDELT API returns minimal content, so we fallback to title
 				url: a.url,
 				source: a.domain || "GDELT Network",
+				sourceRegion: "Global",
 				publishedAt: publishedAt,
 			};
 		});

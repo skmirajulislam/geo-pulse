@@ -10,6 +10,7 @@ exports.normalizeNewsAPI = (articles = []) => {
 			description: a.description,
 			url: a.url,
 			source: a.source?.name || "unknown",
+			sourceRegion: "Global",
 			publishedAt: a.publishedAt,
 		}));
 

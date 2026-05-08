@@ -1,0 +1,391 @@
+{
+  "source": "GeoPulse DIIF coordinate correction overlay",
+  "corrected": "2026-05-08",
+  "note": "Applied after detecting DIIF/Tableau coordinate rows plotted outside the listed country or far from the listed city. Coordinates are city/province centroids unless exact public facility coordinates are available.",
+  "corrections": [
+    {
+      "id": "gi-028",
+      "city": "Sandy, UT",
+      "country": "USA",
+      "lat": 40.56498,
+      "lon": -111.83897,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-083",
+      "city": "Plymouth",
+      "country": "UK",
+      "lat": 50.3755,
+      "lon": -4.1427,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-084",
+      "city": "Bobadela",
+      "country": "Portugal",
+      "lat": 38.8043,
+      "lon": -9.0987,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-085",
+      "city": "Westport",
+      "country": "Ireland",
+      "lat": 53.7997,
+      "lon": -9.5219,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-086",
+      "city": "Ibaraki",
+      "country": "Japan",
+      "lat": 36.3418,
+      "lon": 140.4468,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-088",
+      "city": "Quezon City",
+      "country": "Philippines",
+      "lat": 14.676,
+      "lon": 121.0437,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-089",
+      "city": "Jiangsu Province",
+      "country": "China",
+      "lat": 32.9711,
+      "lon": 119.455,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-090",
+      "city": "Jakarta",
+      "country": "Indonesia",
+      "lat": -6.2088,
+      "lon": 106.8456,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-093",
+      "city": "Selangor",
+      "country": "Malaysia",
+      "lat": 3.0738,
+      "lon": 101.5183,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-094",
+      "city": "Rayong",
+      "country": "Thailand",
+      "lat": 12.6814,
+      "lon": 101.2816,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-095",
+      "city": "Ongkharak",
+      "country": "Thailand",
+      "lat": 14.1211,
+      "lon": 101.0036,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-097",
+      "city": "Kedah",
+      "country": "Malaysia",
+      "lat": 6.1184,
+      "lon": 100.3685,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-098",
+      "city": "Yangon",
+      "country": "Myanmar",
+      "lat": 16.8409,
+      "lon": 96.1735,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-099",
+      "city": "Kolkata",
+      "country": "India",
+      "lat": 22.5726,
+      "lon": 88.3639,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-100",
+      "city": "Unnao",
+      "country": "India",
+      "lat": 26.5393,
+      "lon": 80.4878,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-101",
+      "city": "Malwana",
+      "country": "Sri Lanka",
+      "lat": 6.9379,
+      "lon": 79.9828,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-102",
+      "city": "Telangana",
+      "country": "India",
+      "lat": 17.1232,
+      "lon": 79.2088,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-103",
+      "city": "Malur",
+      "country": "India",
+      "lat": 13.0035,
+      "lon": 77.937,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-104",
+      "city": "Bangalore",
+      "country": "India",
+      "lat": 12.9716,
+      "lon": 77.5946,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-105",
+      "city": "Bangalore",
+      "country": "India",
+      "lat": 12.9716,
+      "lon": 77.5946,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-106",
+      "city": "Delhi",
+      "country": "India",
+      "lat": 28.6139,
+      "lon": 77.209,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-109",
+      "city": "Dewas",
+      "country": "India",
+      "lat": 22.9676,
+      "lon": 76.0534,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-110",
+      "city": "Rahuri",
+      "country": "India",
+      "lat": 19.3907,
+      "lon": 74.6498,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-111",
+      "city": "Nashik",
+      "country": "India",
+      "lat": 19.9975,
+      "lon": 73.7898,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-112",
+      "city": "Lahore",
+      "country": "Pakistan",
+      "lat": 31.5204,
+      "lon": 74.3587,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-113",
+      "city": "Satara",
+      "country": "India",
+      "lat": 17.6805,
+      "lon": 74.0183,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-114",
+      "city": "Thane",
+      "country": "India",
+      "lat": 19.2183,
+      "lon": 72.9781,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-115",
+      "city": "Vadodara",
+      "country": "India",
+      "lat": 22.3072,
+      "lon": 73.1812,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-116",
+      "city": "Mumbai",
+      "country": "India",
+      "lat": 19.076,
+      "lon": 72.8777,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-117",
+      "city": "Mumbai",
+      "country": "India",
+      "lat": 19.076,
+      "lon": 72.8777,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-118",
+      "city": "Thane",
+      "country": "India",
+      "lat": 19.2183,
+      "lon": 72.9781,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-119",
+      "city": "Ahmedabad",
+      "country": "India",
+      "lat": 23.0225,
+      "lon": 72.5714,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-120",
+      "city": "Ahmedabad",
+      "country": "India",
+      "lat": 23.0225,
+      "lon": 72.5714,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-121",
+      "city": "Ahmedabad",
+      "country": "India",
+      "lat": 23.0225,
+      "lon": 72.5714,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-122",
+      "city": "Gujarat",
+      "country": "India",
+      "lat": 22.2587,
+      "lon": 71.1924,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-123",
+      "city": "Tashkent",
+      "country": "Uzbekistan",
+      "lat": 41.2995,
+      "lon": 69.2401,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-124",
+      "city": "Tehran",
+      "country": "Iran",
+      "lat": 35.6892,
+      "lon": 51.389,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-125",
+      "city": "Isfahan",
+      "country": "Iran",
+      "lat": 32.6546,
+      "lon": 51.668,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-126",
+      "city": "Bonab",
+      "country": "Iran",
+      "lat": 37.3404,
+      "lon": 46.0561,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-127",
+      "city": "Amman",
+      "country": "Jordan",
+      "lat": 31.9539,
+      "lon": 35.9106,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-129",
+      "city": "Ankara",
+      "country": "Turkey",
+      "lat": 39.9334,
+      "lon": 32.8597,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-130",
+      "city": "Çerkezköy",
+      "country": "Turkey",
+      "lat": 41.2862,
+      "lon": 27.9994,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-131",
+      "city": "Kempton Park",
+      "country": "South Africa",
+      "lat": -26.1076,
+      "lon": 28.2336,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-132",
+      "city": "Cape Town",
+      "country": "South Africa",
+      "lat": -33.9249,
+      "lon": 18.4241,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-133",
+      "city": "Sidi Thabet",
+      "country": "Tunisia",
+      "lat": 36.9085,
+      "lon": 10.0406,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-134",
+      "city": "Abuja",
+      "country": "Nigeria",
+      "lat": 9.0765,
+      "lon": 7.3986,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-135",
+      "city": "Accra",
+      "country": "Ghana",
+      "lat": 5.6037,
+      "lon": -0.187,
+      "coordinateQuality": "city-centroid-corrected"
+    },
+    {
+      "id": "gi-136",
+      "city": "Ibaraki",
+      "country": "Japan",
+      "lat": 36.3418,
+      "lon": 140.4468,
+      "coordinateQuality": "city-centroid-corrected"
+    }
+  ]
+}

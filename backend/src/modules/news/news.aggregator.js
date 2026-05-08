@@ -13,6 +13,66 @@ const { normalizeGDELT } = require("./sources/gdelt/normalizer.js");
 const { fetchFromGuardian } = require("./sources/guardian/fetcher.js");
 const { normalizeGuardian } = require("./sources/guardian/normalizer.js");
 
+const BALANCED_REGIONS = [
+	"Africa",
+	"Asia",
+	"Middle East",
+	"Europe",
+	"Americas",
+	"Oceania",
+	"Global",
+];
+
+const balanceByRegion = (articles = [], maxArticles = 120) => {
+	const buckets = new Map(BALANCED_REGIONS.map((region) => [region, []]));
+	const other = [];
+
+	for (const article of articles) {
+		const region = article.sourceRegion || "Global";
+		if (buckets.has(region)) buckets.get(region).push(article);
+		else other.push(article);
+	}
+
+	if (other.length) buckets.get("Global").push(...other);
+
+	const selected = [];
+	const selectedUrls = new Set();
+	const perRegionTarget = Math.max(1, Math.floor(maxArticles / BALANCED_REGIONS.length));
+
+	for (const region of BALANCED_REGIONS) {
+		const bucket = buckets.get(region) || [];
+		for (const article of bucket.slice(0, perRegionTarget)) {
+			if (selected.length >= maxArticles) break;
+			if (selectedUrls.has(article.url)) continue;
+			selected.push(article);
+			selectedUrls.add(article.url);
+		}
+	}
+
+	let cursor = 0;
+	while (selected.length < maxArticles) {
+		const region = BALANCED_REGIONS[cursor % BALANCED_REGIONS.length];
+		const bucket = buckets.get(region) || [];
+		const next = bucket.find((article) => !selectedUrls.has(article.url));
+		if (next) {
+			selected.push(next);
+			selectedUrls.add(next.url);
+		}
+
+		cursor += 1;
+		if (cursor > BALANCED_REGIONS.length * maxArticles) break;
+	}
+
+	const counts = selected.reduce((acc, article) => {
+		const region = article.sourceRegion || "Global";
+		acc[region] = (acc[region] || 0) + 1;
+		return acc;
+	}, {});
+
+	logger.info(`Balanced source regions: ${JSON.stringify(counts)}`, "news.aggregator");
+	return selected;
+};
+
 exports.aggregateNews = async () => {
 	logger.info("Starting news aggregation...", "news.aggregator");
 	const maxArticles = Number(process.env.MAX_ARTICLES_PER_RUN || 120);
@@ -65,12 +125,12 @@ exports.aggregateNews = async () => {
 
 	// Sort by published date descending (newest first) to ensure fresh news beats old news
 	deduped.sort((a, b) => {
-		const dateA = new Date(a.published_at || a.timestamp || 0);
-		const dateB = new Date(b.published_at || b.timestamp || 0);
+		const dateA = new Date(a.publishedAt || a.published_at || a.timestamp || 0);
+		const dateB = new Date(b.publishedAt || b.published_at || b.timestamp || 0);
 		return dateB - dateA;
 	});
 
-	const bounded = deduped.slice(0, maxArticles);
+	const bounded = balanceByRegion(deduped, maxArticles);
 
 	logger.info(
 		`Total aggregated articles: ${allArticles.length} → deduped ${deduped.length} → bounded ${bounded.length}`,

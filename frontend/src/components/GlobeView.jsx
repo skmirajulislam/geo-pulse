@@ -45,7 +45,7 @@ export default function GlobeView({
     let cancelled = false;
     const loadGeo = async (url, setter, label) => {
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!cancelled) setter(data);
