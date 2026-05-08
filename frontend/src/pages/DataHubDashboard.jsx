@@ -262,12 +262,21 @@ function MarketsPanel({ stocks, loading, riskLevel, summary, provider, onRefresh
 /* RIGHT-2 · Weather */
 function WeatherPanel() {
   const [regions, setRegions]           = useState([]);
+  const [country, setCountry]           = useState('');
   const [regionId, setRegionId]         = useState('');
   const [metric, setMetric]             = useState('temperature_2m');
   const [days, setDays]                 = useState(7);
   const [forecast, setForecast]         = useState(null);
   const [loading, setLoading]           = useState(false);
 
+  const countries = useMemo(
+    () => Array.from(new Set(regions.map(r => r.country || 'Global'))).sort(),
+    [regions],
+  );
+  const cities = useMemo(
+    () => regions.filter(r => (r.country || 'Global') === country),
+    [regions, country],
+  );
   const region = useMemo(() => regions.find(r => r.id === regionId) || null, [regions, regionId]);
 
   const load = useCallback(async (r, d, m) => {
@@ -285,10 +294,23 @@ function WeatherPanel() {
       try {
         const r = await fetchWeatherRegions();
         setRegions(r);
-        if (r[0]) { setRegionId(r[0].id); load(r[0], days, metric); }
+        if (r[0]) {
+          const firstCountry = r[0].country || 'Global';
+          setCountry(firstCountry);
+          const firstCity = r.find(x => (x.country || 'Global') === firstCountry) || r[0];
+          setRegionId(firstCity.id);
+          load(firstCity, days, metric);
+        }
       } catch (_) {}
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!country || !cities.length) return;
+    if (!cities.some(c => c.id === regionId)) {
+      setRegionId(cities[0].id);
+    }
+  }, [country, cities, regionId]);
 
   useEffect(() => { if (region) load(region, days, metric); }, [region, days, metric]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -300,13 +322,20 @@ function WeatherPanel() {
     <div style={{ ...card, flex: 1 }}>
       <CardHeader dotColor="var(--cat-diplomacy)" title="Weather" right={null} />
       <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 6 }}>
           <select
             style={{ ...sel, gridColumn: 'span 2' }}
+            value={country}
+            onChange={e => setCountry(e.target.value)}
+          >
+            {countries.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select
+            style={sel}
             value={regionId}
             onChange={e => setRegionId(e.target.value)}
           >
-            {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            {cities.map(r => <option key={r.id} value={r.id}>{r.city || r.name}</option>)}
           </select>
           <select style={sel} value={days} onChange={e => setDays(Number(e.target.value))}>
             {[1,3,5,7].map(d => <option key={d} value={d}>{d}d</option>)}
@@ -324,7 +353,7 @@ function WeatherPanel() {
                   {cur.temperature_2m}°C
                 </div>
                 <Mono style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                  {region?.name || 'Region'}
+                  {(region?.city || region?.name || 'City')}{region?.country ? `, ${region.country}` : ''}
                 </Mono>
               </div>
               <span style={{ fontSize: 32, lineHeight: 1 }}>{weatherEmoji(cur.temperature_2m)}</span>

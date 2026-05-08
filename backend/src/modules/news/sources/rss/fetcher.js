@@ -3,6 +3,11 @@ const logger = require("../../../../utils/logger.js");
 
 const parser = new Parser({
   timeout: 15000,
+  requestOptions: {
+    headers: {
+      "User-Agent": "GeoPulse/1.0 (+https://github.com/skmirajulislam/geo-pulse)",
+    },
+  },
 });
 
 const RSS_FEEDS = [
@@ -15,6 +20,9 @@ const RSS_FEEDS = [
   // Reuters shut down public RSS in 2020 (feeds.reuters.com → ENOTFOUND)
   // Replaced with AP News (hosted via Google News) and DW for geographic diversity
   { url: "https://rss.dw.com/rdf/rss-en-world",                           source: "DW World" },
+  { url: "https://news.un.org/feed/subscribe/en/news/all/rss.xml",        source: "UN News" },
+  { url: "https://reliefweb.int/updates/rss.xml",                         source: "ReliefWeb" },
+  { url: "https://feeds.npr.org/1004/rss.xml",                            source: "NPR World" },
 ];
 
 exports.fetchFromRSS = async () => {

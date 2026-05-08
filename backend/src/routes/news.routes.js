@@ -3,6 +3,7 @@ const router = express.Router();
 
 const logger = require("../utils/logger");
 const { eventsLimiter, datesLimiter } = require("../middleware/rateLimiter");
+const asyncHandler = require("../utils/asyncHandler");
 
 const { getGeopoliticalEvents } = require("../modules/news/news.service");
 
@@ -139,29 +140,32 @@ const categorizeEvents = (events) => {
 };
 
 // GET /api/geopolitics/dates
-router.get("/geopolitics/dates", datesLimiter, async (req, res) => {
-	try {
+router.get(
+	"/geopolitics/dates",
+	datesLimiter,
+	asyncHandler(async (req, res, next) => {
 		logger.info("GET /api/geopolitics/dates", "routes");
 		const { getAvailableDates } = require("../cache/cache.service");
 		const dates = await getAvailableDates();
-		
+
 		res.status(200).json({
 			success: true,
 			dates,
 		});
-	} catch (err) {
-		logger.error(`Date Route error: ${err.message}`, "routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
 // GET /api/geopolitics
-router.get("/geopolitics", eventsLimiter, async (req, res) => {
-	const start = Date.now();
-
-	try {
+router.get(
+	"/geopolitics",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
+		const start = Date.now();
 		const targetDate = req.query.date;
-		logger.info(`GET /api/geopolitics${targetDate ? `?date=${targetDate}` : ''}`, "routes");
+		logger.info(
+			`GET /api/geopolitics${targetDate ? `?date=${targetDate}` : ""}`,
+			"routes"
+		);
 
 		const events = await getGeopoliticalEvents(targetDate);
 		const data = categorizeEvents(events);
@@ -170,7 +174,7 @@ router.get("/geopolitics", eventsLimiter, async (req, res) => {
 
 		logger.info(
 			`Response sent (${events.length} events) in ${duration}ms`,
-			"routes",
+			"routes"
 		);
 
 		res.status(200).json({
@@ -178,14 +182,7 @@ router.get("/geopolitics", eventsLimiter, async (req, res) => {
 			count: events.length,
 			data,
 		});
-	} catch (err) {
-		logger.error(`Route error: ${err.message}`, "routes");
-
-		res.status(500).json({
-			success: false,
-			error: "Internal Server Error",
-		});
-	}
-});
+	})
+);
 
 module.exports = router;

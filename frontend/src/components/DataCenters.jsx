@@ -6,7 +6,7 @@ export default function DataCenters() {
   const [geoData, setGeoData] = useState(null);
 
   useEffect(() => {
-    fetch('/datacenters.geojson')
+    fetch('/data/datacenters.geojson')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

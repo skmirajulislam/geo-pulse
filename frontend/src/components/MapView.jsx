@@ -8,6 +8,8 @@ import ZoneOverlays from './ZoneOverlays';
 import SubmarineCables from './SubmarineCables';
 import Pipelines from './Pipelines';
 import DataCenters from './DataCenters';
+import ShipMarkers from './ShipMarkers';
+import IaeaDiifFacilities from './IaeaDiifFacilities';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -58,7 +60,7 @@ const naturalLayerRef  = { current: null };
 const createNaturalMarkerIcon = (type, severity) => {
   const COLOR_MAP = {
     earthquake: '#F97316', storm: '#6366F1', wildfire: '#EF4444',
-    volcano: '#DC2626', flood: '#3B82F6', blizzard: '#93C5FD', weather: '#14B8A6',
+    volcano: '#DC2626', flood: '#3B82F6', blizzard: '#93C5FD', drought: '#F59E0B', tsunami: '#0EA5E9', weather: '#14B8A6',
   };
   const color = COLOR_MAP[type?.toLowerCase()] || '#14B8A6';
   const size  = Math.max(10, Math.min(22, 7 + (severity || 2) * 1.5));
@@ -197,7 +199,7 @@ const NaturalEventMarkers = ({ events, onEventClick }) => {
       const icon   = createNaturalMarkerIcon(event.type, event.severity);
       const COLOR_MAP = {
         earthquake: '#F97316', storm: '#6366F1', wildfire: '#EF4444',
-        volcano: '#DC2626', flood: '#3B82F6', blizzard: '#93C5FD', weather: '#14B8A6',
+        volcano: '#DC2626', flood: '#3B82F6', blizzard: '#93C5FD', drought: '#F59E0B', tsunami: '#0EA5E9', weather: '#14B8A6',
       };
       const color = COLOR_MAP[event.type?.toLowerCase()] || '#14B8A6';
       const marker = L.marker([lat, lng], { icon });
@@ -207,7 +209,7 @@ const NaturalEventMarkers = ({ events, onEventClick }) => {
         `<div style="background:#101217;color:#fff;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);font-family:'IBM Plex Sans',sans-serif;width:max-content;max-width:320px;">
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:${color};margin-bottom:4px;">${event.type || 'Natural Event'}</div>
           <div style="font-size:12px;font-weight:500;line-height:1.4;">${event.title}</div>
-          <div style="font-size:10px;color:#94A3B8;margin-top:6px;">${event.country || ''}</div>
+          <div style="font-size:10px;color:#94A3B8;margin-top:6px;">${event.country || ''}${event.sources?.[0]?.name ? ` • ${event.sources[0].name}` : ''}</div>
         </div>`,
         { direction: 'top', offset: [0, -10], className: 'custom-tooltip', opacity: 1 }
       );
@@ -240,6 +242,9 @@ export default function MapView({
   cablesLayerEnabled = false,
   pipelinesLayerEnabled = false,
   dataCentersLayerEnabled = false,
+  shipsLayerEnabled = false,
+  iaeaDiifLayerEnabled = false,
+  shipData = [],
   onEventClick, 
   onCountryClick, 
   selectedEvent 
@@ -262,6 +267,8 @@ export default function MapView({
         {cablesLayerEnabled && <SubmarineCables />}
         {pipelinesLayerEnabled && <Pipelines />}
         {dataCentersLayerEnabled && <DataCenters />}
+        {shipsLayerEnabled && <ShipMarkers ships={shipData} />}
+        {iaeaDiifLayerEnabled && <IaeaDiifFacilities />}
         <ZoneOverlays events={events} />
         <EventMarkers events={events} onEventClick={onEventClick} onCountryClick={onCountryClick} />
         <WeatherMarkers weatherMarkers={weatherMarkers} />

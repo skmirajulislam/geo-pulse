@@ -3,6 +3,7 @@ const router = express.Router();
 
 const logger = require("../utils/logger");
 const { eventsLimiter } = require("../middleware/rateLimiter");
+const asyncHandler = require("../utils/asyncHandler");
 const { getGeopoliticalEvents } = require("../modules/news/news.service");
 const { getTrendingEvents, isDatabaseEnabled } = require("../db/events.repository");
 const { getRealMarketData } = require("../modules/finance/market.service");
@@ -30,8 +31,10 @@ const mapArticle = (event) => ({
 	url: event.sources?.[0]?.url || null,
 });
 
-router.get("/news/live", eventsLimiter, async (req, res) => {
-	try {
+router.get(
+	"/news/live",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 20));
 		const events = await getGeopoliticalEvents();
 		const live = events.slice(0, limit).map(mapArticle);
@@ -41,14 +44,13 @@ router.get("/news/live", eventsLimiter, async (req, res) => {
 			count: live.length,
 			data: live,
 		});
-	} catch (err) {
-		logger.error(`Live news route error: ${err.message}`, "data.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
-router.get("/articles/trending", eventsLimiter, async (req, res) => {
-	try {
+router.get(
+	"/articles/trending",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 20));
 		const days = Math.max(1, Math.min(30, Number(req.query.days) || 3));
 
@@ -57,7 +59,10 @@ router.get("/articles/trending", eventsLimiter, async (req, res) => {
 			try {
 				items = await getTrendingEvents({ limit, days });
 			} catch (err) {
-				logger.warn(`Trending DB read unavailable, using cache fallback: ${err.message}`, "data.routes");
+				logger.warn(
+					`Trending DB read unavailable, using cache fallback: ${err.message}`,
+					"data.routes"
+				);
 			}
 		}
 
@@ -73,35 +78,34 @@ router.get("/articles/trending", eventsLimiter, async (req, res) => {
 			count: trending.length,
 			data: trending,
 		});
-	} catch (err) {
-		logger.error(`Trending articles route error: ${err.message}`, "data.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
-router.get("/stocks/quotes", eventsLimiter, async (req, res) => {
-	try {
+router.get(
+	"/stocks/quotes",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		const marketData = await getRealMarketData();
 		res.json({
 			success: true,
 			live: Boolean(marketData && marketData.length > 0),
 			data: marketData && marketData.length > 0 ? marketData : STOCKS_FALLBACK,
 		});
-	} catch (err) {
-		logger.error(`Stocks route error: ${err.message}`, "data.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
-router.get("/weather/forecast", eventsLimiter, async (req, res) => {
-	try {
+router.get(
+	"/weather/forecast",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		const latitude = Number(req.query.latitude);
 		const longitude = Number(req.query.longitude);
 		if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
-			return res.status(400).json({
-				success: false,
-				error: "latitude and longitude query params are required numbers",
-			});
+			const err = new Error(
+				"latitude and longitude query params are required numbers"
+			);
+			err.statusCode = 400;
+			throw err;
 		}
 
 		const data = await getWeatherForecast({
@@ -112,31 +116,26 @@ router.get("/weather/forecast", eventsLimiter, async (req, res) => {
 		});
 
 		res.json({ success: true, data });
-	} catch (err) {
-		logger.error(`Weather forecast route error: ${err.message}`, "data.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
-router.get("/weather/regions", eventsLimiter, async (_req, res) => {
-	try {
+router.get(
+	"/weather/regions",
+	eventsLimiter,
+	asyncHandler(async (_req, res, next) => {
 		const data = await getWeatherRegions();
 		res.json({ success: true, count: data.length, data });
-	} catch (err) {
-		logger.error(`Weather regions route error: ${err.message}`, "data.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
-router.get("/weather/events", eventsLimiter, async (_req, res) => {
-	try {
+router.get(
+	"/weather/events",
+	eventsLimiter,
+	asyncHandler(async (_req, res, next) => {
 		const { getWeatherEvents } = require("../modules/weather/weather.service");
 		const data = await getWeatherEvents();
 		res.json({ success: true, count: (data || []).length, data: data || [] });
-	} catch (err) {
-		logger.error(`Weather events route error: ${err.message}`, "data.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
 module.exports = router;

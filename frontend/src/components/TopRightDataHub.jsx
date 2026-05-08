@@ -65,11 +65,18 @@ export default function TopRightDataHub({ className = '' }) {
   const [stocksLive, setStocksLive] = useState(false);
 
   const [weatherRegions, setWeatherRegions] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedRegionId, setSelectedRegionId] = useState('');
   const [weatherMetric, setWeatherMetric] = useState('temperature_2m');
   const [weatherDays, setWeatherDays] = useState(7);
   const [weatherForecast, setWeatherForecast] = useState(null);
 
+  const weatherCountries = useMemo(() => (
+    Array.from(new Set(weatherRegions.map((region) => region.country || 'Global'))).sort()
+  ), [weatherRegions]);
+  const weatherCities = useMemo(() => (
+    weatherRegions.filter((region) => (region.country || 'Global') === selectedCountry)
+  ), [weatherRegions, selectedCountry]);
   const selectedRegion = useMemo(
     () => weatherRegions.find((region) => region.id === selectedRegionId) || null,
     [weatherRegions, selectedRegionId],
@@ -97,13 +104,22 @@ export default function TopRightDataHub({ className = '' }) {
           setWeatherRegions(regions);
         }
 
-        const defaultRegion = selectedRegion || regions[0];
+        const defaultCountry = selectedCountry || regions[0]?.country || 'Global';
+        if (!selectedCountry && defaultCountry) {
+          setSelectedCountry(defaultCountry);
+        }
+
+        const citiesForCountry = regions.filter((region) => (region.country || 'Global') === defaultCountry);
+        const defaultRegion =
+          selectedRegion && (selectedRegion.country || 'Global') === defaultCountry
+            ? selectedRegion
+            : citiesForCountry[0] || regions[0];
         if (!defaultRegion) {
           setWeatherForecast(null);
           return;
         }
 
-        if (!selectedRegionId) {
+        if (!selectedRegionId || !citiesForCountry.some((region) => region.id === selectedRegionId)) {
           setSelectedRegionId(defaultRegion.id);
         }
 
@@ -129,6 +145,13 @@ export default function TopRightDataHub({ className = '' }) {
   }, [activeTab, isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (!selectedCountry || weatherCities.length === 0) return;
+    if (!weatherCities.some((city) => city.id === selectedRegionId)) {
+      setSelectedRegionId(weatherCities[0].id);
+    }
+  }, [selectedCountry, weatherCities, selectedRegionId]);
+
+  useEffect(() => {
     const run = async () => {
       if (!selectedRegion || activeTab !== 'weather' || !isOpen) return;
       setLoading(true);
@@ -149,7 +172,7 @@ export default function TopRightDataHub({ className = '' }) {
     };
 
     run();
-  }, [selectedRegionId, weatherMetric, weatherDays]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedRegionId, weatherMetric, weatherDays, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <motion.div
@@ -300,15 +323,26 @@ export default function TopRightDataHub({ className = '' }) {
 
               {activeTab === 'weather' && (
                 <div className="space-y-2.5">
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <select
                       className="col-span-2 bg-[var(--bg-panel)] border border-[var(--border-default)] rounded-md px-2 py-1.5 text-xs"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                    >
+                      {weatherCountries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="bg-[var(--bg-panel)] border border-[var(--border-default)] rounded-md px-2 py-1.5 text-xs"
                       value={selectedRegionId}
                       onChange={(e) => setSelectedRegionId(e.target.value)}
                     >
-                      {weatherRegions.map((region) => (
+                      {weatherCities.map((region) => (
                         <option key={region.id} value={region.id}>
-                          {region.name}
+                          {region.city || region.name}
                         </option>
                       ))}
                     </select>

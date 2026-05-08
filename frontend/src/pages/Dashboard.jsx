@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchGeopoliticsData, fetchAvailableDates, fetchWeatherRegions, CATEGORY_LIST } from '../services/api';
+import { fetchGeopoliticsData, fetchAvailableDates, fetchWeatherRegions, fetchShipLocations, CATEGORY_LIST } from '../services/api';
 import MapView from '../components/MapView';
 import GlobalCounters from '../components/GlobalCounters';
 import CategoryFilters from '../components/CategoryFilters';
@@ -339,6 +339,9 @@ export default function Dashboard() {
   const [cablesLayerEnabled, setCablesLayerEnabled]       = useState(false);
   const [pipelinesLayerEnabled, setPipelinesLayerEnabled] = useState(false);
   const [dataCentersLayerEnabled, setDataCentersLayerEnabled] = useState(false);
+  const [shipsLayerEnabled, setShipsLayerEnabled]         = useState(false);
+  const [iaeaDiifLayerEnabled, setIaeaDiifLayerEnabled]   = useState(false);
+  const [shipData, setShipData]                           = useState([]);
 
   /* ── WebSocket ─────────────────────────────────────────────────────────── */
   const handleNewEvent = useCallback((eventData) => {
@@ -425,6 +428,30 @@ export default function Dashboard() {
     load();
     return () => { cancelled = true; };
   }, [naturalLayerEnabled, isNaturalPanelOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    let cancelled = false;
+    let interval = null;
+    const loadShips = async () => {
+      try {
+        const ships = await fetchShipLocations();
+        if (!cancelled) setShipData(ships);
+      } catch (e) {
+        console.error('Ship fetch error:', e);
+        if (!cancelled) setShipData([]);
+      }
+    };
+    if (shipsLayerEnabled) {
+      loadShips();
+      interval = setInterval(loadShips, 60 * 60 * 1000); // 1 hour
+    } else {
+      setShipData([]);
+    }
+    return () => {
+      cancelled = true;
+      if (interval) clearInterval(interval);
+    };
+  }, [shipsLayerEnabled]);
 
   const globalEvents = useMemo(() => events.filter(e => e.country === 'Global'), [events]);
 
@@ -516,6 +543,9 @@ export default function Dashboard() {
           cablesLayerEnabled={cablesLayerEnabled}
           pipelinesLayerEnabled={pipelinesLayerEnabled}
           dataCentersLayerEnabled={dataCentersLayerEnabled}
+          shipsLayerEnabled={shipsLayerEnabled}
+          iaeaDiifLayerEnabled={iaeaDiifLayerEnabled}
+          shipData={shipData}
           onEventClick={handleEventClick}
           onCountryClick={handleCountryClick}
           selectedEvent={selectedEvent}
@@ -525,6 +555,13 @@ export default function Dashboard() {
           <GlobeView
             events={filteredMarkers}
             weatherMarkers={weatherMarkers}
+            naturalEventMarkers={naturalLayerEnabled ? naturalEvents : []}
+            cablesLayerEnabled={cablesLayerEnabled}
+            pipelinesLayerEnabled={pipelinesLayerEnabled}
+            dataCentersLayerEnabled={dataCentersLayerEnabled}
+            shipsLayerEnabled={shipsLayerEnabled}
+            iaeaDiifLayerEnabled={iaeaDiifLayerEnabled}
+            shipData={shipData}
             onEventClick={handleEventClick}
             selectedEvent={selectedEvent}
           />
@@ -588,6 +625,10 @@ export default function Dashboard() {
         onPipelinesLayerChange={setPipelinesLayerEnabled}
         dataCentersLayerEnabled={dataCentersLayerEnabled}
         onDataCentersLayerChange={setDataCentersLayerEnabled}
+        shipsLayerEnabled={shipsLayerEnabled}
+        onShipsLayerChange={setShipsLayerEnabled}
+        iaeaDiifLayerEnabled={iaeaDiifLayerEnabled}
+        onIaeaDiifLayerChange={setIaeaDiifLayerEnabled}
       />
 
       {/* Top-right: controls column — HP-styled shell buttons */}

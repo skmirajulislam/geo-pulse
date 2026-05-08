@@ -3,6 +3,7 @@ const router = express.Router();
 
 const logger = require("../utils/logger");
 const { eventsLimiter } = require("../middleware/rateLimiter");
+const asyncHandler = require("../utils/asyncHandler");
 const {
 	getRooms,
 	createRoom,
@@ -13,13 +14,14 @@ const isChatUnavailableError = (message = "") =>
 	message === "Database unavailable" ||
 	/EAI_AGAIN|ECONNREFUSED|ENOTFOUND|querySrv/i.test(message);
 
-router.get("/chat/rooms", eventsLimiter, async (_req, res) => {
-	try {
+router.get(
+	"/chat/rooms",
+	eventsLimiter,
+	asyncHandler(async (_req, res, next) => {
 		if (!isChatDatabaseEnabled()) {
-			return res.status(503).json({
-				success: false,
-				error: "Chat requires MongoDB to be configured",
-			});
+			const err = new Error("Chat requires MongoDB to be configured");
+			err.statusCode = 503;
+			throw err;
 		}
 
 		const rooms = await getRooms();
@@ -28,25 +30,17 @@ router.get("/chat/rooms", eventsLimiter, async (_req, res) => {
 			count: rooms.length,
 			data: rooms,
 		});
-	} catch (err) {
-		if (isChatUnavailableError(err.message)) {
-			return res.status(503).json({
-				success: false,
-				error: "Chat service temporarily unavailable",
-			});
-		}
-		logger.error(`List chat rooms error: ${err.message}`, "chat.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
-router.post("/chat/rooms", eventsLimiter, async (req, res) => {
-	try {
+router.post(
+	"/chat/rooms",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		if (!isChatDatabaseEnabled()) {
-			return res.status(503).json({
-				success: false,
-				error: "Chat requires MongoDB to be configured",
-			});
+			const err = new Error("Chat requires MongoDB to be configured");
+			err.statusCode = 503;
+			throw err;
 		}
 
 		const { roomName, topic, ownerName } = req.body || {};
@@ -55,25 +49,7 @@ router.post("/chat/rooms", eventsLimiter, async (req, res) => {
 			success: true,
 			data: room,
 		});
-	} catch (err) {
-		if (isChatUnavailableError(err.message)) {
-			return res.status(503).json({
-				success: false,
-				error: "Chat service temporarily unavailable",
-			});
-		}
-		if (err.message === "Room name already exists") {
-			return res.status(409).json({ success: false, error: err.message });
-		}
-		if (
-			err.message === "Room name is required" ||
-			err.message === "Owner name is required"
-		) {
-			return res.status(400).json({ success: false, error: err.message });
-		}
-		logger.error(`Create chat room error: ${err.message}`, "chat.routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
 module.exports = router;

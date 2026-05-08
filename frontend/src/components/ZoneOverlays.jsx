@@ -20,7 +20,7 @@ export default function ZoneOverlays({ events }) {
   const map = useMap();
 
   useEffect(() => {
-    fetch('/countries.geojson')
+    fetch('/data/countries.geojson')
       .then(res => res.json())
       .then(data => setGeoData(data))
       .catch(err => console.error('Failed to load GeoJSON:', err));

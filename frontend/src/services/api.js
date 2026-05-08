@@ -4,6 +4,10 @@ export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhos
 const BASE_API_URL = `${BACKEND_URL}/api`;
 const API_URL = `${BACKEND_URL}/api/geopolitics`;
 
+const trimTrailingSlash = (url) => url.replace(/\/+$/, '');
+const isLocalBackend = (url) => /localhost|127\.0\.0\.1/.test(url);
+const withPort = (url, port) => url.replace(/:\d+$/, `:${port}`);
+
 /**
  * Category color palette matching the backend's CATEGORY_ORDER.
  * Exported so components can import it instead of duplicating.
@@ -172,4 +176,27 @@ export const createChatRoom = async ({ roomName, topic, ownerName }) => {
     { timeout: 10000 }
   );
   return res.data?.data || null;
+};
+
+export const fetchShipLocations = async () => {
+  const primaryBase = trimTrailingSlash(BASE_API_URL);
+  const candidateBases = [primaryBase];
+
+  if (isLocalBackend(BACKEND_URL)) {
+    if (/:5000$/.test(BACKEND_URL)) candidateBases.push(`${withPort(trimTrailingSlash(BACKEND_URL), 5050)}/api`);
+    if (/:5050$/.test(BACKEND_URL)) candidateBases.push(`${withPort(trimTrailingSlash(BACKEND_URL), 5000)}/api`);
+  }
+
+  let lastError;
+  for (const baseUrl of candidateBases) {
+    try {
+      const res = await axios.get(`${baseUrl}/ships/locations`, { timeout: 15000 });
+      return res.data?.data || [];
+    } catch (err) {
+      lastError = err;
+      if (err?.response) throw err;
+    }
+  }
+
+  throw lastError;
 };

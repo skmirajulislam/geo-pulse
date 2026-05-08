@@ -27,6 +27,10 @@ export default function CategoryFilters({
   onPipelinesLayerChange,
   dataCentersLayerEnabled = false,
   onDataCentersLayerChange,
+  shipsLayerEnabled = false,
+  onShipsLayerChange,
+  iaeaDiifLayerEnabled = false,
+  onIaeaDiifLayerChange,
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const allSelected = selectedCategories.length === selectableCategories.length;
@@ -208,6 +212,31 @@ export default function CategoryFilters({
                <input type="checkbox" readOnly checked={dataCentersLayerEnabled} className="cf-checkbox" />
                <div className="cf-natural-dot" style={{ background: '#00FFB2', boxShadow: '0 0 5px #00FFB2' }} />
                <span className="cf-natural-label">Data Centers</span>
+             </div>
+           </div>
+         </button>
+
+         <button onClick={() => onShipsLayerChange?.(!shipsLayerEnabled)} className={`cf-natural-btn${shipsLayerEnabled ? ' cf-natural-btn--active' : ''}`} style={{ marginTop: '4px' }}>
+           <div className="cf-row">
+             <div className="cf-row-left">
+               <input type="checkbox" readOnly checked={shipsLayerEnabled} className="cf-checkbox" />
+               <div className="cf-natural-dot" style={{ background: '#3B82F6', boxShadow: '0 0 5px #3B82F6' }} />
+               <span className="cf-natural-label">Vessels / Ships</span>
+             </div>
+           </div>
+         </button>
+      </div>
+
+      {/* Nuclear / Industrial Sources */}
+      <div className="cf-weather-divider" style={{ marginTop: '12px' }}>
+         <div style={{ fontSize: '10px', color: 'var(--hp-gold)', paddingLeft: '8px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Nuclear / Industrial</div>
+
+         <button onClick={() => onIaeaDiifLayerChange?.(!iaeaDiifLayerEnabled)} className={`cf-natural-btn${iaeaDiifLayerEnabled ? ' cf-natural-btn--active' : ''}`}>
+           <div className="cf-row">
+             <div className="cf-row-left">
+               <input type="checkbox" readOnly checked={iaeaDiifLayerEnabled} className="cf-checkbox" />
+               <div className="cf-natural-dot" style={{ background: '#A78BFA', boxShadow: '0 0 5px #A78BFA' }} />
+               <span className="cf-natural-label">IAEA DIIF Facilities</span>
              </div>
            </div>
          </button>

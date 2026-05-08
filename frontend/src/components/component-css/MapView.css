@@ -22,6 +22,124 @@
 .custom-tooltip .leaflet-tooltip-arrow { display: none; }
 .leaflet-control-attribution { display: none !important; }
 
+.diif-marker {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diif-marker__pulse {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #a78bfa;
+  opacity: 0.2;
+  animation: marker-ping 2.6s cubic-bezier(0,0,0.2,1) infinite;
+}
+
+.diif-marker__core {
+  position: absolute;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(15, 12, 28, 0.95);
+  border: 1px solid rgba(253, 230, 138, 0.85);
+  color: #fde68a;
+  font-size: 11px;
+  box-shadow: 0 0 14px rgba(167,139,250,0.8), 0 0 4px rgba(253,230,138,0.7);
+}
+
+.diif-panel {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.25rem;
+  z-index: 500;
+  width: 250px;
+  padding: 0.85rem;
+  border-color: rgba(167,139,250,0.28) !important;
+  pointer-events: none;
+}
+
+.diif-panel__eyebrow,
+.diif-tooltip__eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.diif-panel__title {
+  margin-top: 0.25rem;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.diif-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin: 0.75rem 0;
+}
+
+.diif-panel__grid div {
+  padding: 0.45rem 0.35rem;
+  border: 1px solid rgba(167,139,250,0.22);
+  border-radius: 7px;
+  background: rgba(167,139,250,0.08);
+}
+
+.diif-panel__grid span,
+.diif-panel__grid small {
+  display: block;
+  text-align: center;
+}
+
+.diif-panel__grid span {
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.diif-panel__grid small,
+.diif-panel__source,
+.diif-tooltip__meta {
+  color: #a5b4fc;
+  font-size: 9px;
+}
+
+.diif-panel__source {
+  line-height: 1.35;
+}
+
+.diif-tooltip {
+  width: max-content;
+  max-width: 300px;
+  padding: 8px 12px;
+  border: 1px solid rgba(167,139,250,0.35);
+  border-radius: 6px;
+  background: rgba(10,11,14,0.96);
+  color: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.diif-tooltip__title {
+  margin: 3px 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 /* Glowing Zone Overlay for GeoJSON */
 .glowing-zone {
   filter: drop-shadow(0 0 10px currentColor);

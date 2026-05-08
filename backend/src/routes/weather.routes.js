@@ -3,6 +3,7 @@ const router = express.Router();
 
 const logger = require("../utils/logger");
 const { eventsLimiter, datesLimiter } = require("../middleware/rateLimiter");
+const asyncHandler = require("../utils/asyncHandler");
 
 const { getWeatherEvents } = require("../modules/weather/weather.service");
 
@@ -31,6 +32,7 @@ const CATEGORY_MAP = {
 
 	// Flooding & Water
 	flood: "Flooding & Water",
+	tsunami: "Flooding & Water",
 	coldwave: "Extreme Cold",
 
 	// General
@@ -74,38 +76,40 @@ const categorizeEvents = (events) => {
 };
 
 // GET /api/weather/dates
-router.get("/weather/dates", datesLimiter, async (req, res) => {
-	try {
+router.get(
+	"/weather/dates",
+	datesLimiter,
+	asyncHandler(async (req, res, next) => {
 		logger.info("GET /api/weather/dates", "weather.routes");
 		const { getAvailableDates } = require("../cache/weatherCache.service");
 		const dates = await getAvailableDates();
-		
+
 		res.status(200).json({
 			success: true,
 			dates,
 		});
-	} catch (err) {
-		logger.error(`Date Route error: ${err.message}`, "routes");
-		res.status(500).json({ success: false, error: "Internal Server Error" });
-	}
-});
+	})
+);
 
 // GET /api/weather
-router.get("/weather", eventsLimiter, async (req, res) => {
-	const start = Date.now();
-
-	try {
+router.get(
+	"/weather",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
+		const start = Date.now();
 		const targetDate = req.query.date;
-		logger.info(`GET /api/weather${targetDate ? `?date=${targetDate}` : ''}`, "weather.routes");
+		logger.info(
+			`GET /api/weather${targetDate ? `?date=${targetDate}` : ""}`,
+			"weather.routes"
+		);
 
 		const events = await getWeatherEvents(targetDate);
 		const data = categorizeEvents(events);
 
 		const duration = Date.now() - start;
-
 		logger.info(
 			`Response sent (${events.length} events) in ${duration}ms`,
-			"routes",
+			"routes"
 		);
 
 		res.status(200).json({
@@ -113,14 +117,7 @@ router.get("/weather", eventsLimiter, async (req, res) => {
 			count: events.length,
 			data,
 		});
-	} catch (err) {
-		logger.error(`Route error: ${err.message}`, "routes");
-
-		res.status(500).json({
-			success: false,
-			error: "Internal Server Error",
-		});
-	}
-});
+	})
+);
 
 module.exports = router;

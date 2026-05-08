@@ -31,6 +31,7 @@ exports.globalLimiter = rateLimit({
 	max: Number(process.env.RATE_LIMIT_GLOBAL || 200),
 	standardHeaders: true,   // Emit RateLimit-* headers (IETF draft, works in v6/v7/v8)
 	legacyHeaders: false,    // Disable deprecated X-RateLimit-* headers
+	passOnStoreError: true,
 	store: makeRedisStore("global"),
 	handler: limitExceededHandler,
 	skip: (req) => req.path === "/api/health",
@@ -43,6 +44,7 @@ exports.eventsLimiter = rateLimit({
 	max: Number(process.env.RATE_LIMIT_EVENTS || 60),
 	standardHeaders: true,
 	legacyHeaders: false,
+	passOnStoreError: true,
 	store: makeRedisStore("events"),
 	handler: limitExceededHandler,
 	keyGenerator: ipKeyGenerator,
@@ -54,8 +56,8 @@ exports.datesLimiter = rateLimit({
 	max: Number(process.env.RATE_LIMIT_DATES || 120),
 	standardHeaders: true,
 	legacyHeaders: false,
+	passOnStoreError: true,
 	store: makeRedisStore("dates"),
 	handler: limitExceededHandler,
 	keyGenerator: ipKeyGenerator,
 });
-

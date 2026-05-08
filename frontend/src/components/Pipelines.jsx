@@ -7,7 +7,7 @@ export default function Pipelines() {
   const [geoData, setGeoData] = useState(null);
 
   useEffect(() => {
-    fetch('/pipelines.geojson')
+    fetch('/data/pipelines.geojson')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

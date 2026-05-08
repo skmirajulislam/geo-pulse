@@ -5,6 +5,7 @@ const morgan = require("morgan");
 
 const logger = require("./utils/logger");
 const { globalLimiter } = require("./middleware/rateLimiter");
+const { globalErrorHandler, timeoutHandler, notFoundHandler, healthCheck } = require("./middleware/errorHandler");
 
 // Routes
 const newsRoutes = require("./routes/news.routes");
@@ -12,6 +13,7 @@ const weatherRoutes = require("./routes/weather.routes");
 const aiRoutes = require("./routes/ai.routes");
 const dataRoutes = require("./routes/data.routes");
 const chatRoutes = require("./routes/chat.routes");
+const shipsRoutes = require("./routes/ships.routes");
 
 const app = express();
 
@@ -57,17 +59,13 @@ app.use(
   })
 );
 
+// Add timeout handler (30 second max per request)
+app.use(timeoutHandler(30000));
+
 // ---------- ROUTES ----------
 
 // Health Check — no rate limit, always available
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "ok",
-    message: "Server is running",
-    timestamp: new Date().toISOString(),
-    worker: process.pid, // shows which cluster worker handled the request
-  });
-});
+app.get("/api/health", healthCheck);
 
 // Apply global rate limiter to all remaining /api routes
 app.use("/api", globalLimiter);
@@ -78,30 +76,17 @@ app.use("/api", weatherRoutes);
 app.use("/api", aiRoutes);
 app.use("/api", dataRoutes);
 app.use("/api", chatRoutes);
+app.use("/api/ships", shipsRoutes);
 
 // Root route
 app.get("/", (req, res) => {
   res.send("Geopolitical Intelligence Backend Running 🚀");
 });
 
-// ---------- 404 HANDLER ----------
-app.use((req, res) => {
-  logger.warn(`Route not found: ${req.originalUrl}`, "app");
+// 404 handler
+app.use(notFoundHandler);
 
-  res.status(404).json({
-    success: false,
-    error: "Route not found"
-  });
-});
-
-// ---------- GLOBAL ERROR HANDLER ----------
-app.use((err, req, res, next) => {
-  logger.error(`Unhandled error: ${err.message}`, "app");
-
-  res.status(500).json({
-    success: false,
-    error: "Internal Server Error"
-  });
-});
+// Global error handler (MUST be last)
+app.use(globalErrorHandler);
 
 module.exports = app;

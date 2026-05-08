@@ -20,6 +20,10 @@ const {
 	closeChatRoomsRepository,
 	isChatDatabaseEnabled,
 } = require("./db/chatRooms.repository");
+const { 
+	connectShipsRepository, 
+	closeShipsRepository 
+} = require("./db/ships.repository");
 const { closeSharedClient } = require("./db/mongoClient");
 const {
 	registerChatSocket,
@@ -61,6 +65,7 @@ startInactiveRoomCleanup(io);
 	try {
 		await connectEventsRepository();
 		await connectWeatherRepository();
+		await connectShipsRepository();
 		if (isChatDatabaseEnabled()) {
 			await connectChatRoomsRepository();
 		}
@@ -88,6 +93,11 @@ if (PIPELINE_ENABLED) {
 			logger.info("Initial unified pipeline run starting...", "server");
 			await runAllPipelines();
 			logger.info(`Initial pipeline complete. Next scheduled run in ${PIPELINE_INTERVAL_MINUTES} min.`, "server");
+			
+			logger.info("Initial Ships tracking pipeline run starting...", "server");
+			const { runShipsPipeline } = require("./jobs/ships.job");
+			await runShipsPipeline();
+			logger.info(`Initial ships pipeline complete. Next scheduled run on the hour.`, "server");
 		})();
 	} else {
 		logger.info(`Initial pipeline run explicitly skipped via SKIP_INITIAL_PIPELINE=true. Waiting ${PIPELINE_INTERVAL_MINUTES} min for first scheduled cron...`, "server");
@@ -97,6 +107,14 @@ if (PIPELINE_ENABLED) {
 		logger.info(`Cron fired — running unified pipeline (every ${PIPELINE_INTERVAL_MINUTES} min)`, "cron");
 		await runAllPipelines();
 		logger.info("Cron pipeline run complete. Cache + DB updated.", "cron");
+	});
+
+	// Dedicated hourly cron job for Ships Pipeline (exactly 24 times a day)
+	const { runShipsPipeline } = require("./jobs/ships.job");
+	cron.schedule("0 * * * *", async () => {
+		logger.info("Cron fired — running Ships tracking pipeline (every 1 hour)", "cron");
+		await runShipsPipeline();
+		logger.info("Ships pipeline run complete.", "cron");
 	});
 } else {
 	logger.info(`Pipeline disabled on PID ${process.pid} — API-only worker (reads cache/DB only)`, "server");
@@ -118,7 +136,7 @@ process.on("uncaughtException", (err) => {
 process.on("SIGINT", () => {
 	logger.warn("SIGINT received. Shutting down...", "server");
 	server.close(() => {
-		Promise.all([closeEventsRepository(), closeWeatherRepository(), closeChatRoomsRepository()])
+		Promise.all([closeEventsRepository(), closeWeatherRepository(), closeChatRoomsRepository(), closeShipsRepository()])
 			.then(() => closeSharedClient())
 			.then(() => {
 				logger.info("Server closed", "server");
@@ -131,7 +149,7 @@ process.on("SIGINT", () => {
 process.on("SIGTERM", () => {
 	logger.warn("SIGTERM received. Shutting down...", "server");
 	server.close(() => {
-		Promise.all([closeEventsRepository(), closeWeatherRepository(), closeChatRoomsRepository()])
+		Promise.all([closeEventsRepository(), closeWeatherRepository(), closeChatRoomsRepository(), closeShipsRepository()])
 			.then(() => closeSharedClient())
 			.then(() => {
 				logger.info("Server closed", "server");

@@ -3,6 +3,7 @@ const router = express.Router();
 const logger = require("../utils/logger");
 const { getProviderStatus, chat } = require("../config/llm");
 const { eventsLimiter } = require("../middleware/rateLimiter");
+const asyncHandler = require("../utils/asyncHandler");
 const { getRealMarketData } = require("../modules/finance/market.service");
 
 // ---------- SYSTEM PROMPTS ----------
@@ -87,11 +88,15 @@ const parseJSON = (text) => {
 };
 
 // ---------- POST /api/chat ----------
-router.post("/chat", eventsLimiter, async (req, res) => {
-	try {
+router.post(
+	"/chat",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		const { message, history = [] } = req.body;
 		if (!message || typeof message !== "string" || !message.trim()) {
-			return res.status(400).json({ success: false, error: "Message is required" });
+			const err = new Error("Message is required");
+			err.statusCode = 400;
+			throw err;
 		}
 
 		logger.info(`POST /api/chat — "${message.slice(0, 60)}..."`, "ai.routes");
@@ -114,22 +119,19 @@ router.post("/chat", eventsLimiter, async (req, res) => {
 			provider: result.provider,
 			model: result.model,
 		});
-	} catch (err) {
-		logger.error(`Chat error: ${err.message}`, "ai.routes");
-		res.status(500).json({
-			success: false,
-			error: "AI service temporarily unavailable",
-			message: err.message,
-		});
-	}
-});
+	})
+);
 
 // ---------- POST /api/simulate ----------
-router.post("/simulate", eventsLimiter, async (req, res) => {
-	try {
+router.post(
+	"/simulate",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
 		const { scenario } = req.body;
 		if (!scenario || typeof scenario !== "string" || !scenario.trim()) {
-			return res.status(400).json({ success: false, error: "Scenario is required" });
+			const err = new Error("Scenario is required");
+			err.statusCode = 400;
+			throw err;
 		}
 
 		logger.info(`POST /api/simulate — "${scenario.slice(0, 60)}..."`, "ai.routes");
@@ -148,20 +150,18 @@ router.post("/simulate", eventsLimiter, async (req, res) => {
 			provider: result.provider,
 			model: result.model,
 		});
-	} catch (err) {
-		logger.error(`Simulate error: ${err.message}`, "ai.routes");
-		res.status(500).json({
-			success: false,
-			error: "Simulation service temporarily unavailable",
-			message: err.message,
-		});
-	}
-});
+	})
+);
 
 // ---------- POST /api/finance/correlations ----------
-router.post("/finance/correlations", eventsLimiter, async (req, res) => {
-	try {
-		logger.info("POST /api/finance/correlations — Fetched exclusively via Massive API", "ai.routes");
+router.post(
+	"/finance/correlations",
+	eventsLimiter,
+	asyncHandler(async (req, res, next) => {
+		logger.info(
+			"POST /api/finance/correlations — Fetched exclusively via Massive API",
+			"ai.routes"
+		);
 
 		// Fetch real market data natively, completely bypassing the LLM
 		const realMarketData = await getRealMarketData();
@@ -190,13 +190,13 @@ router.post("/finance/correlations", eventsLimiter, async (req, res) => {
 		}));
 
 		// Determine a static aggregate risk scale based purely on crude oil & SPX vectors
-		const spx = correlations.find(c => c.symbol === "SPX");
-		const oil = correlations.find(c => c.symbol === "CL");
+		const spx = correlations.find((c) => c.symbol === "SPX");
+		const oil = correlations.find((c) => c.symbol === "CL");
 		let risk = "medium";
-		
-		if (spx?.change_pct < -1.5 || oil?.change_pct > 2.0) {
+
+		if ((spx?.change_pct || 0) < -1.5 || (oil?.change_pct || 0) > 2.0) {
 			risk = "high";
-		} else if (spx?.change_pct > 1.0) {
+		} else if ((spx?.change_pct || 0) > 1.0) {
 			risk = "low";
 		}
 
@@ -210,22 +210,18 @@ router.post("/finance/correlations", eventsLimiter, async (req, res) => {
 			provider: "massive-api",
 			model: "polygon-agg",
 		});
-	} catch (err) {
-		logger.error(`Finance native error: ${err.message}`, "ai.routes");
-		res.status(500).json({
-			success: false,
-			error: "Massive API Market logic failed",
-			message: err.message,
-		});
-	}
-});
+	})
+);
 
 // ---------- GET /api/ai/status ----------
-router.get("/ai/status", (req, res) => {
-	res.json({
-		success: true,
-		providers: getProviderStatus(),
-	});
-});
+router.get(
+	"/ai/status",
+	asyncHandler(async (req, res, next) => {
+		res.json({
+			success: true,
+			providers: getProviderStatus(),
+		});
+	})
+);
 
 module.exports = router;

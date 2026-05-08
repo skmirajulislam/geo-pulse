@@ -44,7 +44,13 @@ module.exports = function createCacheService({
 
   // ---------- INTERNAL: read raw envelope { date, events } ----------
   const _readEnvelope = async (key) => {
-    const raw = await redis.get(key);
+    let raw = null;
+    try {
+      raw = await redis.get(key);
+    } catch (err) {
+      logger.warn(`Redis GET failed for key "${key}": ${err.message}`, "cache");
+      return null;
+    }
     if (!raw) return null;
     try {
       const parsed = JSON.parse(raw);
@@ -98,14 +104,25 @@ module.exports = function createCacheService({
 
   const _pruneExpiredArchiveDates = async () => {
     if (RETENTION_DAYS <= 0) return;
-    const dates = await redis.smembers(archiveIndex);
+    let dates = [];
+    try {
+      dates = await redis.smembers(archiveIndex);
+    } catch (err) {
+      logger.warn(`Redis SMEMBERS failed for "${archiveIndex}": ${err.message}`, "cache");
+      return;
+    }
     if (!dates || dates.length === 0) return;
     const cutoff = _cutoffDateString();
     const expiredDates = dates.filter((d) => d < cutoff);
     if (expiredDates.length === 0) return;
     const expiredKeys = expiredDates.map(getDailyKey);
-    await redis.del(...expiredKeys);
-    await redis.srem(archiveIndex, ...expiredDates);
+    try {
+      await redis.del(...expiredKeys);
+      await redis.srem(archiveIndex, ...expiredDates);
+    } catch (err) {
+      logger.warn(`Redis prune failed for "${archiveIndex}": ${err.message}`, "cache");
+      return;
+    }
     logger.info(
       `Retention prune evicted ${expiredDates.length} Redis archive date keys older than ${RETENTION_DAYS} days`,
       "cache"
@@ -114,13 +131,24 @@ module.exports = function createCacheService({
 
   const _pruneArchiveIndex = async () => {
     if (MAX_ARCHIVE_DATES <= 0) return;
-    const dates = (await redis.smembers(archiveIndex)).sort();
+    let dates = [];
+    try {
+      dates = (await redis.smembers(archiveIndex)).sort();
+    } catch (err) {
+      logger.warn(`Redis SMEMBERS failed for "${archiveIndex}": ${err.message}`, "cache");
+      return;
+    }
     if (dates.length <= MAX_ARCHIVE_DATES) return;
     const evictDates = dates.slice(0, dates.length - MAX_ARCHIVE_DATES);
     if (evictDates.length === 0) return;
     const keysToDelete = evictDates.map(getDailyKey);
-    await redis.del(...keysToDelete);
-    await redis.srem(archiveIndex, ...evictDates);
+    try {
+      await redis.del(...keysToDelete);
+      await redis.srem(archiveIndex, ...evictDates);
+    } catch (err) {
+      logger.warn(`Redis archive eviction failed for "${archiveIndex}": ${err.message}`, "cache");
+      return;
+    }
     logger.info(`Cache replacement evicted ${evictDates.length} archive date keys`, "cache");
   };
 
@@ -128,78 +156,102 @@ module.exports = function createCacheService({
     const dateStr = envelope.date || todayString();
     const key = getDailyKey(dateStr);
     const json = JSON.stringify(envelope);
-    await redis.set(key, json, "EX", CACHE_TTL_SECONDS);
-    await redis.sadd(archiveIndex, dateStr);
-    await _pruneExpiredArchiveDates();
-    await _pruneArchiveIndex();
-    logger.info(
-      `Cache written mapped to date: ${dateStr} — ${envelope.events.length} events archived`,
-      "cache"
-    );
+    try {
+      await redis.set(key, json, "EX", CACHE_TTL_SECONDS);
+      await redis.sadd(archiveIndex, dateStr);
+      await _pruneExpiredArchiveDates();
+      await _pruneArchiveIndex();
+      logger.info(
+        `Cache written mapped to date: ${dateStr} — ${envelope.events.length} events archived`,
+        "cache"
+      );
+    } catch (err) {
+      logger.warn(`Redis write failed for key "${key}": ${err.message}`, "cache");
+    }
   };
 
   // ---------- PUBLIC API ----------
   const getAvailableDates = async () => {
+    let redisDates = [];
     try {
       await _pruneExpiredArchiveDates();
-      const dates = await redis.smembers(archiveIndex);
-      if (dates && dates.length > 0) return dates.sort();
-      if (isDatabaseEnabled()) {
-        const dbDates = await getAvailableDatesFromDb();
-        if (dbDates.length > 0) {
-          await redis.sadd(archiveIndex, ...dbDates);
-          await _pruneArchiveIndex();
-          return dbDates;
-        }
-      }
-      return [todayString()];
+      redisDates = await redis.smembers(archiveIndex);
     } catch (err) {
       logger.error(`Redis SMEMBERS error: ${err.message}`, "cache");
-      return [todayString()];
     }
+
+    if (redisDates && redisDates.length > 0) {
+      return redisDates.sort();
+    }
+
+    if (isDatabaseEnabled()) {
+      try {
+        const dbDates = await getAvailableDatesFromDb();
+        if (dbDates.length > 0) {
+          try {
+            await redis.sadd(archiveIndex, ...dbDates);
+            await _pruneArchiveIndex();
+          } catch (err) {
+            logger.warn(`Redis SADD failed for "${archiveIndex}": ${err.message}`, "cache");
+          }
+          return dbDates;
+        }
+      } catch (err) {
+        logger.warn(`MongoDB dates fallback failed: ${err.message}`, "cache");
+      }
+    }
+
+    return [todayString()];
   };
 
   const getCache = async (targetDate) => {
-    try {
-      const dateStr = targetDate || todayString();
-      const key = getDailyKey(dateStr);
-      logger.info(`Checking Redis cache for target date: ${dateStr}...`, "cache");
-      let envelope = await _readEnvelope(key);
-      if (envelope) {
-        logger.info(`Cache hit (${dateStr}) — ${envelope.events.length} events`, "cache");
-        return envelope.events;
-      }
-      if (isDatabaseEnabled()) {
+    const dateStr = targetDate || todayString();
+    const key = getDailyKey(dateStr);
+    logger.info(`Checking Redis cache for target date: ${dateStr}...`, "cache");
+
+    const envelope = await _readEnvelope(key);
+    if (envelope) {
+      logger.info(`Cache hit (${dateStr}) — ${envelope.events.length} events`, "cache");
+      return envelope.events;
+    }
+
+    if (isDatabaseEnabled()) {
+      try {
         const dbEvents = await getEventsByDate(dateStr);
         if (dbEvents.length > 0) {
           logger.info(`Cache miss (${dateStr}) resolved from MongoDB (${dbEvents.length} events)`, "cache");
           await _writeEnvelope({ date: dateStr, events: dbEvents });
           return dbEvents;
         }
+      } catch (err) {
+        logger.warn(`MongoDB lookup failed for ${dateStr}: ${err.message}`, "cache");
       }
-      if (!targetDate || targetDate === todayString()) {
-        logger.warn(`No DB records exactly matching ${dateStr}. Searching fallback index.`, "cache");
-        const availableDates = await getAvailableDates();
-        if (availableDates.length > 0) {
-          const fallbackDate = availableDates[availableDates.length - 1];
-          const fallbackKey = getDailyKey(fallbackDate);
-          const fallbackEnvelope = await _readEnvelope(fallbackKey);
-          if (fallbackEnvelope && fallbackEnvelope.events) return fallbackEnvelope.events;
-          if (isDatabaseEnabled()) {
+    }
+
+    if (!targetDate || targetDate === todayString()) {
+      logger.warn(`No DB records exactly matching ${dateStr}. Searching fallback index.`, "cache");
+      const availableDates = await getAvailableDates();
+      if (availableDates.length > 0) {
+        const fallbackDate = availableDates[availableDates.length - 1];
+        const fallbackKey = getDailyKey(fallbackDate);
+        const fallbackEnvelope = await _readEnvelope(fallbackKey);
+        if (fallbackEnvelope && fallbackEnvelope.events) return fallbackEnvelope.events;
+        if (isDatabaseEnabled()) {
+          try {
             const fallbackDbEvents = await getEventsByDate(fallbackDate);
             if (fallbackDbEvents.length > 0) {
               await _writeEnvelope({ date: fallbackDate, events: fallbackDbEvents });
               return fallbackDbEvents;
             }
+          } catch (err) {
+            logger.warn(`MongoDB fallback lookup failed for ${fallbackDate}: ${err.message}`, "cache");
           }
         }
       }
-      logger.warn(`No valid cache available for date ${dateStr}`, "cache");
-      return null;
-    } catch (err) {
-      logger.error(`Redis GET error: ${err.message}`, "cache");
-      return null;
     }
+
+    logger.warn(`No valid cache available for date ${dateStr}`, "cache");
+    return null;
   };
 
   const getCacheOnly = async (targetDate) => {

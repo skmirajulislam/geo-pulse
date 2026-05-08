@@ -11,6 +11,8 @@ const TYPE_META = {
   volcano:    { label: 'Volcano',    color: '#DC2626', emoji: '🌋' },
   flood:      { label: 'Flood',      color: '#3B82F6', emoji: '🌊' },
   blizzard:   { label: 'Blizzard',   color: '#93C5FD', emoji: '❄️'  },
+  drought:    { label: 'Drought',    color: '#F59E0B', emoji: '🌵' },
+  tsunami:    { label: 'Tsunami',    color: '#0EA5E9', emoji: '🌀' },
   weather:    { label: 'Weather',    color: '#14B8A6', emoji: '⛅'  },
 };
 
@@ -107,16 +109,30 @@ function NaturalEventCard({ event, index }) {
 /* ── main panel ──────────────────────────────────────────────────────── */
 export default function NaturalEvents({ events = [], loading = false, onClose, onRefresh }) {
   const [typeFilter, setTypeFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
 
   const types = useMemo(() => {
     const set = new Set(events.map(e => e.type).filter(Boolean));
     return ['all', ...Array.from(set)];
   }, [events]);
 
+  const sources = useMemo(() => {
+    const set = new Set(
+      events
+        .map(e => e.sources?.[0]?.name)
+        .filter(Boolean)
+    );
+    return ['all', ...Array.from(set)];
+  }, [events]);
+
   const displayed = useMemo(() => {
-    if (typeFilter === 'all') return events;
-    return events.filter(e => e.type === typeFilter);
-  }, [events, typeFilter]);
+    return events.filter((e) => {
+      const typeOk = typeFilter === 'all' || e.type === typeFilter;
+      const source = e.sources?.[0]?.name || '';
+      const sourceOk = sourceFilter === 'all' || source === sourceFilter;
+      return typeOk && sourceOk;
+    });
+  }, [events, typeFilter, sourceFilter]);
 
   return (
     <div className="ne-backdrop" onClick={onClose}>
@@ -167,6 +183,26 @@ export default function NaturalEvents({ events = [], loading = false, onClose, o
                 }}
               >
                 {t === 'all' ? 'All' : getMeta(t).label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="ne-pills" style={{ marginTop: 6 }}>
+          {sources.map((s) => {
+            const active = sourceFilter === s;
+            return (
+              <button
+                key={s}
+                className="ne-pill"
+                onClick={() => setSourceFilter(s)}
+                style={{
+                  background: active ? '#ffffff18' : 'transparent',
+                  borderColor: active ? '#94A3B8' : 'transparent',
+                  color: active ? '#D1D5DB' : 'var(--text-muted)',
+                }}
+              >
+                {s === 'all' ? 'All Sources' : s}
               </button>
             );
           })}
